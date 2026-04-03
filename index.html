@@ -117,7 +117,12 @@
   .chat-msg.ai{align-self:flex-start;background:var(--card);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px}
   .chat-msg.ai.loading{opacity:.5}
   .chat-foot{padding:10px 16px 24px;border-top:1px solid var(--border);background:var(--card);display:flex;gap:8px}
-  .chat-clear-wrap{text-align:center;padding:12px 0 4px}.chat-clear-wrap a{font-size:.65rem;color:var(--muted);text-decoration:underline}
+  .chat-clear-wrap{text-align:center;padding:12px 0 4px}.chat-clear-wrap a{font-size:.65rem;color:var(--muted);text-decoration:underline;margin:0 6px}
+  .chat-transfer{background:var(--card);border:1px dashed var(--border);border-radius:12px;padding:14px;margin:8px 0;font-size:.68rem;color:var(--text);line-height:1.7}
+  .chat-transfer textarea{width:100%;min-height:80px;border:1px solid var(--border);border-radius:8px;padding:8px;font-size:.65rem;background:var(--bg);color:var(--text);resize:vertical;margin:6px 0;font-family:inherit}
+  .chat-transfer button{background:var(--gold);color:#fff;border:none;border-radius:16px;padding:8px 16px;font-size:.68rem;font-weight:700;cursor:pointer;margin:4px 4px 0 0}
+  .chat-transfer button.sub{background:transparent;color:var(--gold);border:1px solid var(--gold)}
+  .chat-transfer .ok-msg{color:var(--accent);font-size:.65rem;margin-top:6px}
   .chat-foot input{flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:.73rem;background:var(--bg);color:var(--text);outline:none}
   .chat-foot input:focus{border-color:var(--gold)}
   .chat-foot button{background:var(--gold);color:#fff;border:none;border-radius:20px;padding:10px 20px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap}
@@ -920,9 +925,14 @@ function renderChatLog(log, user) {
       chatHistory.push({ role: 'model', parts: [{ text: m.text }] });
     }
   }
+  html += '<div class="chat-clear-wrap">';
   if (log.length > 0) {
-    html += '<div class="chat-clear-wrap"><a href="#" onclick="clearChatLog();return false">履歴をクリア</a></div>';
+    html += '<a href="#" onclick="exportChat();return false">履歴をコピー</a>';
+    html += '<a href="#" onclick="clearChatLog();return false">履歴をクリア</a>';
   }
+  html += '<a href="#" onclick="showImportChat();return false">別端末から復元</a>';
+  html += '</div>';
+  html += '<div id="chat-transfer-area"></div>';
   body.innerHTML = html;
   body.scrollTop = body.scrollHeight;
 }
@@ -933,6 +943,63 @@ function clearChatLog() {
   chatHistory = [];
   chatReady = false;
   openChat();
+}
+
+function exportChat() {
+  var log = loadChatLog(chatUser);
+  if (!log.length) { alert('履歴がありません'); return; }
+  var data = JSON.stringify({ user: chatUser, log: log, exported: new Date().toISOString() });
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(data).then(function() {
+      alert(chatUser + 'の履歴をコピーしました！\n\nLINEやメモ帳に貼り付けて、別の端末に送ってください。');
+    }).catch(function() { fallbackCopyExport(data); });
+  } else {
+    fallbackCopyExport(data);
+  }
+}
+
+function fallbackCopyExport(data) {
+  var area = document.getElementById('chat-transfer-area');
+  area.innerHTML = '<div class="chat-transfer"><strong>下のテキストを全選択→コピーしてください</strong><br>' +
+    '<textarea id="export-text" readonly onclick="this.select()">' + data + '</textarea>' +
+    '<button onclick="document.getElementById(\'export-text\').select();document.execCommand(\'copy\');this.textContent=\'コピーしました！\'">コピー</button>' +
+    '<button class="sub" onclick="this.parentElement.remove()">閉じる</button></div>';
+  var ta = document.getElementById('export-text');
+  ta.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function showImportChat() {
+  var area = document.getElementById('chat-transfer-area');
+  area.innerHTML = '<div class="chat-transfer">' +
+    '<strong>別の端末からチャット履歴を復元</strong><br>' +
+    '別端末でコピーした履歴データを貼り付けてください。<br>' +
+    '<textarea id="import-text" placeholder="ここに履歴データを貼り付け"></textarea>' +
+    '<button onclick="doImportChat()">復元する</button>' +
+    '<button class="sub" onclick="this.parentElement.remove()">キャンセル</button>' +
+    '<div id="import-msg"></div></div>';
+  document.getElementById('import-text').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+
+function doImportChat() {
+  var raw = document.getElementById('import-text').value.trim();
+  if (!raw) { alert('データを貼り付けてください'); return; }
+  try {
+    var data = JSON.parse(raw);
+    if (!data.log || !Array.isArray(data.log)) throw new Error('invalid');
+    var user = data.user || chatUser;
+    var key = getChatStorageKey(user);
+    var existing = [];
+    try { existing = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+    var merged = existing.concat(data.log);
+    if (merged.length > 200) merged = merged.slice(-200);
+    localStorage.setItem(key, JSON.stringify(merged));
+    alert(user + 'の履歴を' + data.log.length + '件復元しました！');
+    chatReady = false;
+    if (chatUser === user) openChat();
+    else document.getElementById('chat-transfer-area').innerHTML = '<div class="chat-transfer ok-msg">復元完了！「' + user + '」のページでチャットを開くと表示されます。</div>';
+  } catch(e) {
+    alert('データの形式が正しくありません。\nコピーした履歴データをそのまま貼り付けてください。');
+  }
 }
 
 function openChat() {
