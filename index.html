@@ -117,6 +117,7 @@
   .chat-msg.ai{align-self:flex-start;background:var(--card);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px}
   .chat-msg.ai.loading{opacity:.5}
   .chat-foot{padding:10px 16px 24px;border-top:1px solid var(--border);background:var(--card);display:flex;gap:8px}
+  .chat-clear-wrap{text-align:center;padding:12px 0 4px}.chat-clear-wrap a{font-size:.65rem;color:var(--muted);text-decoration:underline}
   .chat-foot input{flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:.73rem;background:var(--bg);color:var(--text);outline:none}
   .chat-foot input:focus{border-color:var(--gold)}
   .chat-foot button{background:var(--gold);color:#fff;border:none;border-radius:20px;padding:10px 20px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap}
@@ -895,6 +896,59 @@ var chatHistory = [];
 var chatReady = false;
 var chatUser = '';
 
+function getChatStorageKey(user) {
+  return user === 'まさや' ? 'chat_log_masaya' : 'chat_log_nahoko';
+}
+
+function saveChatLog(user, role, text) {
+  var key = getChatStorageKey(user);
+  var log = [];
+  try { log = JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) {}
+  log.push({ role: role, text: text, ts: Date.now() });
+  if (log.length > 200) log = log.slice(-200);
+  localStorage.setItem(key, JSON.stringify(log));
+}
+
+function loadChatLog(user) {
+  var key = getChatStorageKey(user);
+  try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch(e) { return []; }
+}
+
+function renderChatLog(log, user) {
+  var body = document.getElementById('chat-body');
+  var partner = user === 'なほこ' ? 'まさや' : 'なほこ';
+  var html = '<div class="chat-msg ai"><b>' + user + 'さん</b>としてチャット中！<br>四柱推命に基づいて何でもアドバイスしますよ。<br><br>' +
+    '<b>こんな質問ができます：</b><br>' +
+    '・車を買うタイミングはいつがいい？<br>' +
+    '・今月の仕事運は？<br>' +
+    '・' + partner + 'との旅行はいつがベスト？<br>' +
+    '・今日やるべきことは？</div>';
+  chatHistory = [];
+  for (var i = 0; i < log.length; i++) {
+    var m = log[i];
+    if (m.role === 'user') {
+      html += '<div class="chat-msg user">' + escHtml(m.text) + '</div>';
+      chatHistory.push({ role: 'user', parts: [{ text: m.text }] });
+    } else {
+      html += '<div class="chat-msg ai">' + m.text.replace(/\n/g, '<br>') + '</div>';
+      chatHistory.push({ role: 'model', parts: [{ text: m.text }] });
+    }
+  }
+  if (log.length > 0) {
+    html += '<div class="chat-clear-wrap"><a href="#" onclick="clearChatLog();return false">履歴をクリア</a></div>';
+  }
+  body.innerHTML = html;
+  body.scrollTop = body.scrollHeight;
+}
+
+function clearChatLog() {
+  if (!confirm(chatUser + 'のチャット履歴を削除しますか？')) return;
+  localStorage.removeItem(getChatStorageKey(chatUser));
+  chatHistory = [];
+  chatReady = false;
+  openChat();
+}
+
 function openChat() {
   var overlay = document.getElementById('chat-overlay');
   overlay.classList.add('open');
@@ -902,17 +956,10 @@ function openChat() {
   if (!key) { showChatSetup(); return; }
   var user = getActiveUser();
   if (!chatReady || chatUser !== user) {
-    chatHistory = [];
-    var partner = user === 'なほこ' ? 'まさや' : 'なほこ';
-    document.getElementById('chat-body').innerHTML =
-      '<div class="chat-msg ai"><b>' + user + 'さん</b>としてチャット中！<br>四柱推命に基づいて何でもアドバイスしますよ。<br><br>' +
-      '<b>こんな質問ができます：</b><br>' +
-      '・車を買うタイミングはいつがいい？<br>' +
-      '・今月の仕事運は？<br>' +
-      '・' + partner + 'との旅行はいつがベスト？<br>' +
-      '・今日やるべきことは？</div>';
-    chatReady = true;
     chatUser = user;
+    var log = loadChatLog(user);
+    renderChatLog(log, user);
+    chatReady = true;
   }
   document.getElementById('chat-foot').style.display = 'flex';
   setTimeout(function(){ document.getElementById('chat-input').focus(); }, 100);
@@ -1017,6 +1064,7 @@ async function sendChat() {
   body.scrollTop = body.scrollHeight;
 
   chatHistory.push({ role: 'user', parts: [{ text: msg }] });
+  saveChatLog(chatUser, 'user', msg);
 
   var key = localStorage.getItem('fortune_ai_key');
   try {
@@ -1048,12 +1096,15 @@ async function sendChat() {
       el.classList.remove('loading');
       el.removeAttribute('id');
       chatHistory.pop();
+      var tmpLog = loadChatLog(chatUser);
+      if (tmpLog.length && tmpLog[tmpLog.length-1].role === 'user') { tmpLog.pop(); localStorage.setItem(getChatStorageKey(chatUser), JSON.stringify(tmpLog)); }
       sendBtn.disabled = false;
       return;
     }
 
     var reply = data.candidates[0].content.parts[0].text;
     chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+    saveChatLog(chatUser, 'model', reply);
     el.innerHTML = reply.replace(/\n/g, '<br>');
     el.classList.remove('loading');
     el.removeAttribute('id');
@@ -1063,6 +1114,8 @@ async function sendChat() {
     el.classList.remove('loading');
     el.removeAttribute('id');
     chatHistory.pop();
+    var tmpLog2 = loadChatLog(chatUser);
+    if (tmpLog2.length && tmpLog2[tmpLog2.length-1].role === 'user') { tmpLog2.pop(); localStorage.setItem(getChatStorageKey(chatUser), JSON.stringify(tmpLog2)); }
   }
   sendBtn.disabled = false;
   body.scrollTop = body.scrollHeight;
