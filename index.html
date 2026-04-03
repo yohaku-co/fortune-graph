@@ -1,0 +1,520 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>壬水の運勢グラフ</title>
+<style>
+  :root {
+    --bg: #f5f0eb;
+    --card: #ffffff;
+    --text: #4a3f35;
+    --muted: #9b8e82;
+    --accent: #c4a882;
+    --accent2: #d4b896;
+    --gold: #b8956a;
+    --danger: #c87f7f;
+    --success: #8aad8a;
+    --border: #e8e0d8;
+    --bar-h: 24px;
+    --rose: #d4a0a0;
+    --lavender: #b8a0c8;
+    --sage: #a0b8a0;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Hiragino Sans', 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    overflow-x: hidden;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .header {
+    text-align: center;
+    padding: 28px 16px 0;
+    background: linear-gradient(180deg, #ede6df, var(--bg));
+  }
+  h1 {
+    font-size: 1.2rem;
+    letter-spacing: 0.1em;
+    color: var(--gold);
+    font-weight: 700;
+  }
+  .subtitle {
+    font-size: 0.7rem;
+    color: var(--muted);
+    margin-top: 4px;
+    letter-spacing: 0.05em;
+  }
+  .nav {
+    display: flex;
+    gap: 0;
+    position: sticky;
+    top: 0;
+    background: rgba(245,240,235,0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    z-index: 10;
+    padding: 12px 16px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .nav button {
+    flex: 1;
+    padding: 10px 4px 12px;
+    border: none;
+    background: none;
+    color: var(--muted);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s;
+    position: relative;
+    letter-spacing: 0.05em;
+  }
+  .nav button.active {
+    color: var(--gold);
+  }
+  .nav button.active::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 20%;
+    right: 20%;
+    height: 2px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+  .slider-container {
+    overflow: hidden;
+    touch-action: pan-y;
+  }
+  .slider {
+    display: flex;
+    transition: transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1);
+    will-change: transform;
+  }
+  .section {
+    min-width: 100%;
+    padding: 16px;
+    padding-bottom: 60px;
+  }
+  .card {
+    background: var(--card);
+    border-radius: 14px;
+    padding: 18px;
+    margin-bottom: 14px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    margin-bottom: 14px;
+    color: var(--text);
+    letter-spacing: 0.02em;
+  }
+  .era-label {
+    font-size: 0.65rem;
+    color: #fff;
+    background: var(--accent);
+    padding: 3px 10px;
+    border-radius: 20px;
+    margin-bottom: 10px;
+    display: inline-block;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+  }
+  .era-label.gold { background: var(--gold); }
+  .era-label.danger { background: var(--danger); }
+  .era-label.success { background: var(--success); }
+  .row {
+    display: grid;
+    grid-template-columns: 58px 1fr 26px;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 7px;
+  }
+  .row-label {
+    font-size: 0.68rem;
+    color: var(--muted);
+    text-align: right;
+    white-space: nowrap;
+  }
+  .bar-bg {
+    background: #f0ebe5;
+    border-radius: 12px;
+    height: var(--bar-h);
+    position: relative;
+    overflow: hidden;
+  }
+  .bar {
+    height: 100%;
+    border-radius: 12px;
+    transition: width 0.6s ease;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    font-size: 0.62rem;
+    font-weight: 600;
+    color: #fff;
+    white-space: nowrap;
+  }
+  .score {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-align: center;
+  }
+  .bar.s1, .bar.s2, .bar.s3 { background: linear-gradient(90deg, #c87f7f, #d4a0a0); }
+  .bar.s4 { background: linear-gradient(90deg, #c8a87f, #d4bc9e); }
+  .bar.s5 { background: linear-gradient(90deg, #b8a888, #cdbfa0); }
+  .bar.s6 { background: linear-gradient(90deg, #8aad8a, #a8c8a8); }
+  .bar.s7 { background: linear-gradient(90deg, #82a8a0, #a0c0b8); }
+  .bar.s8 { background: linear-gradient(90deg, #8898b8, #a0b0d0); }
+  .bar.s9, .bar.s10 { background: linear-gradient(90deg, #a088b8, #b8a0d0); }
+
+  .score.s1, .score.s2, .score.s3 { color: var(--danger); }
+  .score.s4 { color: #c8a87f; }
+  .score.s5 { color: #b0a080; }
+  .score.s6 { color: #7a9a7a; }
+  .score.s7 { color: #6a9890; }
+  .score.s8 { color: #7888a8; }
+  .score.s9, .score.s10 { color: #9078a8; }
+
+  .highlight-row .bar-bg { box-shadow: 0 0 0 2px var(--gold); }
+  .highlight-row .row-label { color: var(--gold); font-weight: 700; }
+  .note {
+    font-size: 0.72rem;
+    color: var(--muted);
+    margin-top: 10px;
+    padding: 12px;
+    background: #faf7f4;
+    border-radius: 10px;
+    border-left: 3px solid var(--accent);
+    line-height: 1.8;
+  }
+  .note strong { color: var(--text); }
+  .legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 14px;
+    justify-content: center;
+  }
+  .legend-item {
+    font-size: 0.62rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--muted);
+  }
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+  }
+  .summary-box {
+    background: linear-gradient(135deg, #ede6df, #e8ddd4);
+    border-radius: 14px;
+    padding: 24px;
+    text-align: center;
+    margin-top: 14px;
+    border: 1px solid var(--border);
+  }
+  .summary-box p {
+    font-size: 0.8rem;
+    line-height: 1.8;
+    color: var(--muted);
+  }
+  .summary-box .big {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin: 8px 0;
+    color: var(--gold);
+  }
+  .month-note {
+    font-size: 0.65rem;
+    color: var(--muted);
+    margin-top: 2px;
+    padding-left: 66px;
+    margin-bottom: 4px;
+  }
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 14px 0;
+  }
+  .page-dots {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 0 4px;
+  }
+  .page-dots .dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.3s;
+  }
+  .page-dots .dot.active {
+    background: var(--gold);
+    width: 18px;
+    border-radius: 3px;
+  }
+  .swipe-hint {
+    text-align: center;
+    font-size: 0.6rem;
+    color: var(--muted);
+    padding: 4px 0 8px;
+    opacity: 0.6;
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>壬水の運勢グラフ</h1>
+  <p class="subtitle">1997.1.20 生まれ ── 日干：壬水（大海の水）</p>
+</div>
+
+<div class="nav">
+  <button class="active" data-idx="0">人生</button>
+  <button data-idx="1">未来</button>
+  <button data-idx="2">2026年</button>
+</div>
+
+<div class="page-dots">
+  <div class="dot active"></div>
+  <div class="dot"></div>
+  <div class="dot"></div>
+</div>
+<p class="swipe-hint">← スワイプで切り替え →</p>
+
+<div class="slider-container">
+<div class="slider">
+
+<!-- ===== 人生グラフ ===== -->
+<div class="section">
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#d4a0a0"></div>1〜3</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#cdbfa0"></div>4〜5</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a8c8a8"></div>6〜7</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a0b0d0"></div>8〜9</div>
+  </div>
+
+  <div class="card">
+    <span class="era-label">大運：庚子（偏印）守られて育つ時期</span>
+    <div class="card-title">5〜14歳（2002〜2011）</div>
+    <div class="row"><span class="row-label">5歳 壬午</span><div class="bar-bg"><div class="bar s6" style="width:60%">比肩</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">6歳 癸未</span><div class="bar-bg"><div class="bar s5" style="width:50%">劫財</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">7歳 甲申</span><div class="bar-bg"><div class="bar s7" style="width:70%">食神</div></div><span class="score s7">7</span></div>
+    <div class="row"><span class="row-label">8歳 乙酉</span><div class="bar-bg"><div class="bar s5" style="width:50%">傷官</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">9歳 丙戌</span><div class="bar-bg"><div class="bar s6" style="width:60%">偏財</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">10歳 丁亥</span><div class="bar-bg"><div class="bar s7" style="width:70%">正財</div></div><span class="score s7">7</span></div>
+    <div class="row"><span class="row-label">11歳 戊子</span><div class="bar-bg"><div class="bar s5" style="width:50%">偏官</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">12歳 己丑</span><div class="bar-bg"><div class="bar s5" style="width:50%">正官</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">13歳 庚寅</span><div class="bar-bg"><div class="bar s8" style="width:80%">偏印</div></div><span class="score s8">8</span></div>
+    <div class="row"><span class="row-label">14歳 辛卯</span><div class="bar-bg"><div class="bar s8" style="width:80%">正印</div></div><span class="score s8">8</span></div>
+    <div class="note">13〜14歳は<strong>偏印×偏印</strong>が重なり、学びの吸収力が人生最高レベルだった時期。</div>
+  </div>
+
+  <div class="card">
+    <span class="era-label">大運：己亥（正官）社会に出る時期</span>
+    <div class="card-title">15〜24歳（2012〜2021）</div>
+    <div class="row"><span class="row-label">15歳 壬辰</span><div class="bar-bg"><div class="bar s6" style="width:60%">比肩</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">16歳 癸巳</span><div class="bar-bg"><div class="bar s4" style="width:40%">劫財</div></div><span class="score s4">4</span></div>
+    <div class="row"><span class="row-label">17歳 甲午</span><div class="bar-bg"><div class="bar s7" style="width:70%">食神</div></div><span class="score s7">7</span></div>
+    <div class="row"><span class="row-label">18歳 乙未</span><div class="bar-bg"><div class="bar s5" style="width:50%">傷官</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">19歳 丙申</span><div class="bar-bg"><div class="bar s6" style="width:60%">偏財</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">20歳 丁酉</span><div class="bar-bg"><div class="bar s7" style="width:70%">正財</div></div><span class="score s7">7</span></div>
+    <div class="row"><span class="row-label">21歳 戊戌</span><div class="bar-bg"><div class="bar s4" style="width:40%">偏官</div></div><span class="score s4">4</span></div>
+    <div class="row"><span class="row-label">22歳 己亥</span><div class="bar-bg"><div class="bar s5" style="width:50%">正官</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">23歳 庚子</span><div class="bar-bg"><div class="bar s7" style="width:70%">偏印</div></div><span class="score s7">7</span></div>
+    <div class="row"><span class="row-label">24歳 辛丑</span><div class="bar-bg"><div class="bar s7" style="width:70%">正印</div></div><span class="score s7">7</span></div>
+    <div class="note">21歳（2018年）が谷。<strong>偏官×正官</strong>で二重のプレッシャー。23〜24歳で印星が回復を助けた。</div>
+  </div>
+
+  <div class="card">
+    <span class="era-label danger">大運：戊戌（偏官）試練と成長 ← 今ここ</span>
+    <div class="card-title">25〜29歳（2022〜2026）</div>
+    <div class="row"><span class="row-label">25歳 壬寅</span><div class="bar-bg"><div class="bar s5" style="width:50%">比肩</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">26歳 癸卯</span><div class="bar-bg"><div class="bar s4" style="width:40%">劫財</div></div><span class="score s4">4</span></div>
+    <div class="row"><span class="row-label">27歳 甲辰</span><div class="bar-bg"><div class="bar s6" style="width:60%">食神</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">28歳 乙巳</span><div class="bar-bg"><div class="bar s5" style="width:50%">傷官</div></div><span class="score s5">5</span></div>
+    <div class="row highlight-row"><span class="row-label">29歳 丙午</span><div class="bar-bg"><div class="bar s6" style="width:60%">偏財</div></div><span class="score s6">6</span></div>
+    <div class="note"><strong>今（29歳）</strong>は偏官大運の真っ只中。キツいのは当然。でもこの時期に稼ぎ・貯金・法人化＝種まきは完璧。</div>
+  </div>
+</div>
+
+<!-- ===== 未来グラフ ===== -->
+<div class="section">
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#d4a0a0"></div>1〜3</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#cdbfa0"></div>4〜5</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a8c8a8"></div>6〜7</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a0b0d0"></div>8〜9</div>
+  </div>
+
+  <div class="card">
+    <span class="era-label danger">大運：戊戌（偏官）残り5年</span>
+    <div class="card-title">29〜34歳（2026〜2031）</div>
+    <div class="row highlight-row"><span class="row-label">29歳 丙午</span><div class="bar-bg"><div class="bar s6" style="width:60%">偏財</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">30歳 丁未</span><div class="bar-bg"><div class="bar s6" style="width:60%">正財</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">31歳 戊申</span><div class="bar-bg"><div class="bar s3" style="width:30%">偏官</div></div><span class="score s3">3</span></div>
+    <div class="row"><span class="row-label">32歳 己酉</span><div class="bar-bg"><div class="bar s5" style="width:50%">正官</div></div><span class="score s5">5</span></div>
+    <div class="row"><span class="row-label">33歳 庚戌</span><div class="bar-bg"><div class="bar s6" style="width:60%">偏印</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">34歳 辛亥</span><div class="bar-bg"><div class="bar s8" style="width:80%">正印</div></div><span class="score s8">8</span></div>
+    <div class="note">
+      <strong>31歳（2028年）が要注意。</strong>偏官×偏官のダブル。無理せず守りの年に。<br>
+      <strong>34歳（2031年）に大回復。</strong>正印が偏官大運の最後を癒してくれる。
+    </div>
+  </div>
+
+  <div class="card">
+    <span class="era-label gold">大運：丁酉（正財）★ 黄金期到来 ★</span>
+    <div class="card-title">35〜44歳（2032〜2041）</div>
+    <div class="row"><span class="row-label">35歳 壬子</span><div class="bar-bg"><div class="bar s8" style="width:80%">比肩</div></div><span class="score s8">8</span></div>
+    <div class="row"><span class="row-label">36歳 癸丑</span><div class="bar-bg"><div class="bar s6" style="width:60%">劫財</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">37歳 甲寅</span><div class="bar-bg"><div class="bar s9" style="width:90%">食神</div></div><span class="score s9">9</span></div>
+    <div class="row"><span class="row-label">38歳 乙卯</span><div class="bar-bg"><div class="bar s7" style="width:70%">傷官</div></div><span class="score s7">7</span></div>
+    <div class="row"><span class="row-label">39歳 丙辰</span><div class="bar-bg"><div class="bar s8" style="width:80%">偏財</div></div><span class="score s8">8</span></div>
+    <div class="row"><span class="row-label">40歳 丁巳</span><div class="bar-bg"><div class="bar s9" style="width:90%">正財</div></div><span class="score s9">9</span></div>
+    <div class="row"><span class="row-label">41歳 戊午</span><div class="bar-bg"><div class="bar s6" style="width:60%">偏官</div></div><span class="score s6">6</span></div>
+    <div class="row"><span class="row-label">42歳 己未</span><div class="bar-bg"><div class="bar s7" style="width:70%">正官</div></div><span class="score s7">7</span></div>
+    <div class="row"><span class="row-label">43歳 庚申</span><div class="bar-bg"><div class="bar s8" style="width:80%">偏印</div></div><span class="score s8">8</span></div>
+    <div class="row"><span class="row-label">44歳 辛酉</span><div class="bar-bg"><div class="bar s9" style="width:90%">正印</div></div><span class="score s9">9</span></div>
+    <div class="note">
+      <strong>37歳と40歳が人生の頂点級。</strong>正財大運 + 食神/正財の最強の配置。<br><br>
+      <strong>44歳の辛酉</strong>は正印×正財で知性と豊かさの究極コンボ。
+    </div>
+  </div>
+
+  <div class="summary-box">
+    <p>今がキツいのは<br>あなたがダメだからじゃない</p>
+    <p class="big">大運が一番厳しい時期だから</p>
+    <p>35歳から始まる黄金期に向けて<br>今は種をまいている時期です</p>
+  </div>
+</div>
+
+<!-- ===== 2026年月別 ===== -->
+<div class="section">
+
+  <div class="legend">
+    <div class="legend-item"><div class="legend-dot" style="background:#d4a0a0"></div>1〜3</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#cdbfa0"></div>4〜5</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a8c8a8"></div>6〜7</div>
+    <div class="legend-item"><div class="legend-dot" style="background:#a0b0d0"></div>8〜9</div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2026年（丙午年）月別運勢</div>
+
+    <div class="row"><span class="row-label">1月 己丑</span><div class="bar-bg"><div class="bar s4" style="width:40%">正官</div></div><span class="score s4">4</span></div>
+    <p class="month-note">年始はまだ重め</p>
+
+    <div class="row"><span class="row-label">2月 庚寅</span><div class="bar-bg"><div class="bar s7" style="width:70%">偏印</div></div><span class="score s7">7</span></div>
+    <p class="month-note">サポートが来て楽になる</p>
+
+    <div class="row highlight-row"><span class="row-label">3月 辛卯</span><div class="bar-bg"><div class="bar s7" style="width:70%">正印</div></div><span class="score s7">7</span></div>
+    <p class="month-note">← 今ここ。学びに最適！</p>
+
+    <div class="row"><span class="row-label">4月 壬辰</span><div class="bar-bg"><div class="bar s6" style="width:60%">比肩</div></div><span class="score s6">6</span></div>
+    <p class="month-note">自分らしさが戻る</p>
+
+    <div class="row"><span class="row-label">5月 癸巳</span><div class="bar-bg"><div class="bar s5" style="width:50%">劫財</div></div><span class="score s5">5</span></div>
+    <p class="month-note">出費やライバルに注意</p>
+
+    <div class="row"><span class="row-label">6月 甲午</span><div class="bar-bg"><div class="bar s7" style="width:70%">食神</div></div><span class="score s7">7</span></div>
+    <p class="month-note">楽しさ・創造性UP</p>
+
+    <hr class="divider">
+
+    <div class="row"><span class="row-label">7月 乙未</span><div class="bar-bg"><div class="bar s4" style="width:40%">傷官</div></div><span class="score s4">4</span></div>
+    <p class="month-note">言葉に注意・イライラしやすい</p>
+
+    <div class="row"><span class="row-label">8月 丙申</span><div class="bar-bg"><div class="bar s8" style="width:80%">偏財</div></div><span class="score s8">8</span></div>
+    <p class="month-note">お金のチャンス！</p>
+
+    <div class="row"><span class="row-label">9月 丁酉</span><div class="bar-bg"><div class="bar s9" style="width:90%">正財</div></div><span class="score s9">9</span></div>
+    <p class="month-note">★ 今年のベスト月 ★</p>
+
+    <hr class="divider">
+
+    <div class="row"><span class="row-label">10月 戊戌</span><div class="bar-bg"><div class="bar s3" style="width:30%">偏官</div></div><span class="score s3">3</span></div>
+    <p class="month-note">今年一番キツい月。休むと決める</p>
+
+    <div class="row"><span class="row-label">11月 己亥</span><div class="bar-bg"><div class="bar s6" style="width:60%">正官</div></div><span class="score s6">6</span></div>
+    <p class="month-note">少しずつ回復</p>
+
+    <div class="row"><span class="row-label">12月 庚子</span><div class="bar-bg"><div class="bar s7" style="width:70%">偏印</div></div><span class="score s7">7</span></div>
+    <p class="month-note">年末は穏やかに</p>
+  </div>
+
+  <div class="card">
+    <div class="card-title">2026年のポイント</div>
+    <div class="note" style="margin-top:0">
+      <strong>8〜9月が勝負どころ。</strong>お金に関する大きな動きに最適。法人化の手続きにも良い時期。<br><br>
+      <strong>10月は無理禁止。</strong>偏官が大運・年・月でトリプルに重なる。意識的に休む月に。<br><br>
+      <strong>3月（今）は学びの月。</strong>英会話やスキル習得が最も身につく時期。
+    </div>
+  </div>
+</div>
+
+</div><!-- slider -->
+</div><!-- slider-container -->
+
+<script>
+const slider = document.querySelector('.slider');
+const container = document.querySelector('.slider-container');
+const buttons = document.querySelectorAll('.nav button');
+const dots = document.querySelectorAll('.page-dots .dot');
+let currentIdx = 0;
+let startX = 0;
+let currentX = 0;
+let isDragging = false;
+
+function goTo(idx) {
+  if (idx < 0 || idx > 2) return;
+  currentIdx = idx;
+  slider.style.transform = `translateX(-${idx * 100}%)`;
+  buttons.forEach(b => b.classList.remove('active'));
+  buttons[idx].classList.add('active');
+  dots.forEach(d => d.classList.remove('active'));
+  dots[idx].classList.add('active');
+}
+
+buttons.forEach(b => {
+  b.addEventListener('click', () => goTo(parseInt(b.dataset.idx)));
+});
+
+container.addEventListener('touchstart', (e) => {
+  startX = e.touches[0].clientX;
+  isDragging = true;
+  slider.style.transition = 'none';
+}, { passive: true });
+
+container.addEventListener('touchmove', (e) => {
+  if (!isDragging) return;
+  currentX = e.touches[0].clientX;
+  const diff = currentX - startX;
+  const offset = -currentIdx * 100;
+  const percent = (diff / window.innerWidth) * 100;
+  slider.style.transform = `translateX(${offset + percent}%)`;
+}, { passive: true });
+
+container.addEventListener('touchend', () => {
+  if (!isDragging) return;
+  isDragging = false;
+  slider.style.transition = 'transform 0.35s cubic-bezier(0.25, 0.1, 0.25, 1)';
+  const diff = currentX - startX;
+  if (diff < -50) goTo(currentIdx + 1);
+  else if (diff > 50) goTo(currentIdx - 1);
+  else goTo(currentIdx);
+});
+</script>
+
+</body>
+</html>
