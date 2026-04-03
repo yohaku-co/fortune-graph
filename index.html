@@ -70,6 +70,28 @@
   .tl-year{font-size:.75rem;font-weight:700;color:var(--gold)}.tl-age{font-size:.65rem;color:var(--muted)}
   .tl-desc{font-size:.72rem;margin-top:4px;line-height:1.7}
   .star{color:var(--gold);font-size:.7rem}.star.empty{color:var(--border)}
+  .daily-section{padding:16px 16px 8px}
+  .daily-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+  .daily-title{font-size:.88rem;font-weight:700;display:flex;align-items:center;gap:8px}
+  .daily-update{font-size:.58rem;color:var(--muted);opacity:.6}
+  .daily-card{background:var(--card);border-radius:14px;padding:16px;margin-bottom:10px;box-shadow:0 1px 8px rgba(0,0,0,.04);border:1px solid var(--border);position:relative;overflow:hidden}
+  .daily-card.tomorrow{opacity:.75;border-style:dashed}
+  .daily-day-label{font-size:.58rem;color:#fff;padding:2px 8px;border-radius:10px;display:inline-block;margin-bottom:6px;font-weight:700}
+  .daily-day-label.today-label{background:var(--gold)}
+  .daily-day-label.tomorrow-label{background:var(--muted)}
+  .person-page[data-person="husband"] .daily-day-label.today-label{background:var(--blue)}
+  .daily-date{font-size:.72rem;font-weight:700;margin-bottom:2px}
+  .daily-ganzhi{font-size:.62rem;color:var(--muted);margin-bottom:8px}
+  .daily-star{display:inline-block;font-size:.6rem;color:#fff;padding:2px 10px;border-radius:10px;margin-right:6px}
+  .daily-summary{display:inline;font-size:.78rem;font-weight:700}
+  .daily-star-line{margin-bottom:8px}
+  .daily-score-bar{display:flex;align-items:center;gap:8px;margin-bottom:10px}
+  .daily-score-track{flex:1;height:6px;background:#f0ebe5;border-radius:3px;overflow:hidden}
+  .daily-score-fill{height:100%;border-radius:3px;transition:width .8s ease}
+  .daily-score-num{font-size:.82rem;font-weight:800;min-width:24px;text-align:right}
+  .daily-advice{font-size:.7rem;color:var(--muted);line-height:1.7;margin-bottom:8px}
+  .daily-lucky{font-size:.65rem;color:var(--accent);background:#faf7f4;padding:6px 10px;border-radius:8px;line-height:1.6}
+  .daily-divider{border:none;border-top:1px dashed var(--border);margin:12px 0}
 </style>
 </head>
 <body>
@@ -88,6 +110,8 @@
 <!-- 私のページ -->
 <!-- ################################################################ -->
 <div class="person-page active" data-person="me">
+<div id="daily-me"></div>
+<hr class="daily-divider" style="margin:0 16px">
 <div class="nav">
   <button class="active" data-idx="0">人生</button>
   <button data-idx="1">未来</button>
@@ -225,6 +249,8 @@
 <!-- 旦那さんのページ -->
 <!-- ################################################################ -->
 <div class="person-page" data-person="husband">
+<div id="daily-husband"></div>
+<hr class="daily-divider" style="margin:0 16px">
 <div class="nav">
   <button class="active" data-idx="0">人生</button>
   <button data-idx="1">未来</button>
@@ -397,6 +423,122 @@ function toggle(row) {
 }
 
 initSlider(document.querySelector('.person-page.active'));
+
+var STEMS = ['甲','乙','丙','丁','戊','己','庚','辛','壬','癸'];
+var BRANCHES = ['子','丑','寅','卯','辰','巳','午','未','申','酉','戌','亥'];
+var DAYS = ['日','月','火','水','木','金','土'];
+
+function getJD(y, m, d) {
+  if (m <= 2) { y--; m += 12; }
+  var A = Math.floor(y / 100);
+  var B = 2 - A + Math.floor(A / 4);
+  return Math.floor(365.25 * (y + 4716)) + Math.floor(30.6001 * (m + 1)) + d + B - 1524;
+}
+
+function getDayGanzhi(date) {
+  var jd = getJD(date.getFullYear(), date.getMonth() + 1, date.getDate());
+  var idx = ((jd + 49) % 60 + 60) % 60;
+  return { stemIdx: idx % 10, branchIdx: idx % 12, stem: STEMS[idx % 10], branch: BRANCHES[idx % 12] };
+}
+
+var ME_DAILY = [
+  { star:'食神', score:7, summary:'表現力が輝く日', advice:'自然体で過ごすのがベスト。SNS投稿や新アイデアを形にするのに最適。お昼は好きなものを。', lucky:'緑色のもの・カフェ・公園' },
+  { star:'傷官', score:4, summary:'感性が鋭い日', advice:'言葉がキツくなりやすいので大事な連絡は控えめに。アートや音楽など感性を活かす作業は◎', lucky:'花・ハーブティー・静かな場所' },
+  { star:'偏財', score:6, summary:'行動力UPの日', advice:'新しい出会いやチャンスが巡る日。営業・提案など対外的な動きに向いている。', lucky:'オレンジ色・新しいお店・南向き' },
+  { star:'正財', score:7, summary:'安定した日', advice:'堅実な判断ができる日。契約確認や経理作業に向いている。コツコツ作業を片付けよう。', lucky:'整理整頓・温かい飲み物・和食' },
+  { star:'偏官', score:3, summary:'プレッシャーの日', advice:'外部からの圧を感じやすい。無理しないで、早めに仕事を切り上げてゆっくりお風呂に。', lucky:'入浴剤・チョコレート・早寝' },
+  { star:'正官', score:5, summary:'規律の日', advice:'ルーティンを守ると安定する日。新しいことより既存タスクの整理を。丁寧な対応を心がけて。', lucky:'手帳・ToDoリスト・身だしなみ' },
+  { star:'偏印', score:8, summary:'学びが吸収される日', advice:'英会話やスキル学習に最適！直感が冴える。メンターからのアドバイスがスッと入ってくる。', lucky:'本・オンライン講座・図書館' },
+  { star:'正印', score:8, summary:'知性が輝く日', advice:'情報収集や分析に最適。読書も◎。お気に入りのカフェでゆっくり自分を大事にして。', lucky:'シルバー小物・紅茶・瞑想' },
+  { star:'比肩', score:6, summary:'自分らしくいられる日', advice:'等身大でOK。直感を信じて。同じ価値観の人と過ごすとエネルギーが充電される。', lucky:'水辺・ブルー系・自分磨き' },
+  { star:'劫財', score:5, summary:'出費に注意の日', advice:'衝動買いや人に流される出費に注意。SNSの見すぎにも気をつけて。', lucky:'貯金アプリ確認・断捨離・白色' }
+];
+
+var HUS_DAILY = [
+  { star:'比肩', score:6, summary:'自分らしくいられる日', advice:'自分のペースで仕事を進めるのが吉。ライバル意識は控えめに。', lucky:'森林浴・木製品・朝の散歩' },
+  { star:'劫財', score:5, summary:'出費に注意の日', advice:'衝動的な判断は避ける。お金の貸し借りは特に注意。自分軸で動いて。', lucky:'自炊・節約意識・植物' },
+  { star:'食神', score:7, summary:'リラックスの日', advice:'楽しいことが自然と集まる日。趣味や好きなことに時間を使うと吉。', lucky:'好きな料理・日光浴・ゲーム' },
+  { star:'傷官', score:4, summary:'言葉に注意の日', advice:'感性が鋭くなるが言い過ぎに注意。奥さんとの会話は特に丁寧に。', lucky:'静かな場所・読書・キャンドル' },
+  { star:'偏財', score:6, summary:'行動力UPの日', advice:'新しいチャンスに出会える日。営業や対外的な活動に向いている。少し大胆にOK。', lucky:'外出・新しい場所・ランチ' },
+  { star:'正財', score:7, summary:'安定の日', advice:'堅実な判断ができる日。家計の見直しや書類整理に最適。家庭を大事に。', lucky:'家庭料理・掃除・家族の時間' },
+  { star:'偏官', score:3, summary:'プレッシャーの日', advice:'上司や外部からの圧がかかりやすい。無理せず、早めに帰宅して。', lucky:'入浴・早寝・好きな音楽' },
+  { star:'正官', score:5, summary:'社会的な日', advice:'仕事での評価が上がりやすい。ルールを守って丁寧に仕事をすると信頼UP。', lucky:'身だしなみ・挨拶・スーツ' },
+  { star:'偏印', score:8, summary:'学びの日', advice:'スキルアップに最適。資格勉強や技術的な学びが身につきやすい。', lucky:'勉強・技術書・セミナー' },
+  { star:'正印', score:8, summary:'知性が冴える日', advice:'分析力が上がる日。仕事の戦略立てに向いている。奥さんに優しくすると運気UP。', lucky:'読書・計画立て・お茶の時間' }
+];
+
+function branchMod(bIdx, person) {
+  if (person === 'me') {
+    if (bIdx === 0 || bIdx === 11) return 1;
+    if (bIdx === 8 || bIdx === 9) return 1;
+    if (bIdx === 5 || bIdx === 6) return -1;
+    return 0;
+  }
+  if (bIdx === 2 || bIdx === 3) return 1;
+  if (bIdx === 0 || bIdx === 11) return 1;
+  if (bIdx === 8 || bIdx === 9) return -1;
+  return 0;
+}
+
+function scoreColor(s) {
+  if (s <= 3) return { bar:'linear-gradient(90deg,#c87f7f,#d4a0a0)', num:'var(--danger)' };
+  if (s <= 5) return { bar:'linear-gradient(90deg,#c8a87f,#d4bc9e)', num:'#b0a080' };
+  if (s <= 7) return { bar:'linear-gradient(90deg,#8aad8a,#a8c8a8)', num:'#7a9a7a' };
+  return { bar:'linear-gradient(90deg,#8898b8,#a0b0d0)', num:'#7888a8' };
+}
+
+function starColor(s) {
+  if (s <= 3) return 'var(--danger)';
+  if (s <= 5) return 'var(--accent)';
+  if (s <= 7) return 'var(--success)';
+  return 'var(--blue)';
+}
+
+function renderDayCard(date, data, isToday) {
+  var gz = getDayGanzhi(date);
+  var person = data === ME_DAILY ? 'me' : 'husband';
+  var f = data[gz.stemIdx];
+  var score = Math.max(1, Math.min(10, f.score + branchMod(gz.branchIdx, person)));
+  var sc = scoreColor(score);
+  var m = date.getMonth() + 1;
+  var d = date.getDate();
+  var dow = DAYS[date.getDay()];
+
+  return '<div class="daily-card' + (isToday ? '' : ' tomorrow') + '">' +
+    '<span class="daily-day-label ' + (isToday ? 'today-label' : 'tomorrow-label') + '">' + (isToday ? '今日' : '明日') + '</span>' +
+    '<div class="daily-date">' + m + '/' + d + '（' + dow + '） ' + gz.stem + gz.branch + '日</div>' +
+    '<div class="daily-star-line"><span class="daily-star" style="background:' + starColor(score) + '">' + f.star + '</span>' +
+    '<span class="daily-summary">' + f.summary + '</span></div>' +
+    '<div class="daily-score-bar"><div class="daily-score-track"><div class="daily-score-fill" style="width:' + (score * 10) + '%;background:' + sc.bar + '"></div></div>' +
+    '<div class="daily-score-num" style="color:' + sc.num + '">' + score + '</div></div>' +
+    '<div class="daily-advice">' + f.advice + '</div>' +
+    '<div class="daily-lucky">Lucky : ' + f.lucky + '</div></div>';
+}
+
+function renderDaily() {
+  var now = new Date();
+  var tmrw = new Date(now);
+  tmrw.setDate(tmrw.getDate() + 1);
+  var timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0') + ' 更新';
+
+  var meHtml = '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
+    renderDayCard(now, ME_DAILY, true) + renderDayCard(tmrw, ME_DAILY, false) + '</div>';
+  document.getElementById('daily-me').innerHTML = meHtml;
+
+  var husHtml = '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
+    renderDayCard(now, HUS_DAILY, true) + renderDayCard(tmrw, HUS_DAILY, false) + '</div>';
+  document.getElementById('daily-husband').innerHTML = husHtml;
+}
+
+renderDaily();
+
+(function scheduleRefresh() {
+  var now = new Date();
+  var midnight = new Date(now);
+  midnight.setDate(midnight.getDate() + 1);
+  midnight.setHours(0, 0, 5, 0);
+  setTimeout(function() { renderDaily(); scheduleRefresh(); }, midnight - now);
+})();
 </script>
 </body>
 </html>
