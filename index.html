@@ -103,6 +103,34 @@
   .person-page[data-person="husband"] .daily-branch-msg{border-left-color:var(--blue)}
   .daily-lucky{font-size:.65rem;color:var(--accent);background:#faf7f4;padding:6px 10px;border-radius:8px;line-height:1.6}
   .daily-divider{border:none;border-top:1px dashed var(--border);margin:12px 0}
+  .chat-fab{position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,var(--gold),#a07848);color:#fff;border:none;padding:14px 22px;border-radius:30px;font-size:.78rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:100;letter-spacing:.05em;transition:transform .2s}
+  .chat-fab:active{transform:scale(.95)}
+  .chat-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;display:none;flex-direction:column}
+  .chat-overlay.open{display:flex}
+  .chat-head{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;background:linear-gradient(180deg,#ede6df,var(--bg));border-bottom:1px solid var(--border)}
+  .chat-head-title{font-size:.88rem;font-weight:700;color:var(--gold);letter-spacing:.05em}
+  .chat-head-sub{font-size:.58rem;color:var(--muted);margin-left:8px;font-weight:400}
+  .chat-close{background:none;border:none;font-size:1.3rem;color:var(--muted);cursor:pointer;padding:4px 8px}
+  .chat-body{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:10px}
+  .chat-msg{max-width:85%;padding:12px 16px;border-radius:16px;font-size:.73rem;line-height:1.8;word-break:break-word}
+  .chat-msg.user{align-self:flex-end;background:var(--gold);color:#fff;border-bottom-right-radius:4px}
+  .chat-msg.ai{align-self:flex-start;background:var(--card);color:var(--text);border:1px solid var(--border);border-bottom-left-radius:4px}
+  .chat-msg.ai.loading{opacity:.5}
+  .chat-foot{padding:10px 16px 24px;border-top:1px solid var(--border);background:var(--card);display:flex;gap:8px}
+  .chat-foot input{flex:1;border:1px solid var(--border);border-radius:20px;padding:10px 16px;font-size:.73rem;background:var(--bg);color:var(--text);outline:none}
+  .chat-foot input:focus{border-color:var(--gold)}
+  .chat-foot button{background:var(--gold);color:#fff;border:none;border-radius:20px;padding:10px 20px;font-size:.72rem;font-weight:700;cursor:pointer;white-space:nowrap}
+  .chat-foot button:disabled{opacity:.4}
+  .chat-setup{padding:24px;flex:1;display:flex;flex-direction:column;justify-content:center}
+  .chat-setup h3{font-size:.92rem;color:var(--gold);margin-bottom:8px;text-align:center}
+  .chat-setup .desc{font-size:.7rem;color:var(--muted);line-height:1.8;margin-bottom:16px;text-align:center}
+  .chat-setup .steps{text-align:left;background:#faf7f4;border-radius:12px;padding:16px;margin-bottom:16px;font-size:.68rem;line-height:2.2;color:var(--muted);border:1px solid var(--border)}
+  .chat-setup .steps strong{color:var(--text)}
+  .chat-setup input{width:100%;border:1px solid var(--border);border-radius:12px;padding:12px 16px;font-size:.72rem;margin-bottom:12px;background:var(--bg);outline:none}
+  .chat-setup input:focus{border-color:var(--gold)}
+  .chat-setup button{background:var(--gold);color:#fff;border:none;padding:12px 30px;border-radius:20px;font-size:.75rem;font-weight:700;cursor:pointer;display:block;margin:0 auto}
+  .chat-setup a{color:var(--gold)}
+  .chat-setup .note{font-size:.6rem;color:var(--muted);text-align:center;margin-top:12px;opacity:.7}
 </style>
 </head>
 <body>
@@ -390,6 +418,19 @@
 </div></div><!-- /slider -->
 </div><!-- /husband -->
 
+<button class="chat-fab" onclick="openChat()">相談する</button>
+<div id="chat-overlay" class="chat-overlay">
+  <div class="chat-head">
+    <div><span class="chat-head-title">運勢相談</span><span class="chat-head-sub">四柱推命AIアドバイザー</span></div>
+    <button class="chat-close" onclick="closeChat()">&times;</button>
+  </div>
+  <div id="chat-body" class="chat-body"></div>
+  <div id="chat-foot" class="chat-foot">
+    <input id="chat-input" type="text" placeholder="例：車を買うタイミングは？" onkeydown="if(event.key==='Enter'&&!event.isComposing)sendChat()">
+    <button id="chat-send" onclick="sendChat()">送信</button>
+  </div>
+</div>
+
 <script>
 function switchPerson(person) {
   document.querySelectorAll('.person-toggle button').forEach(b => b.classList.remove('active'));
@@ -675,6 +716,163 @@ renderDaily();
   midnight.setHours(0, 0, 5, 0);
   setTimeout(function() { renderDaily(); scheduleRefresh(); }, midnight - now);
 })();
+
+var chatHistory = [];
+var chatReady = false;
+
+function openChat() {
+  var overlay = document.getElementById('chat-overlay');
+  overlay.classList.add('open');
+  var key = localStorage.getItem('fortune_ai_key');
+  if (!key) { showChatSetup(); return; }
+  if (!chatReady) {
+    document.getElementById('chat-body').innerHTML =
+      '<div class="chat-msg ai">こんにちは！四柱推命に基づいて何でもアドバイスしますよ。<br><br>' +
+      '<b>こんな質問ができます：</b><br>' +
+      '・車を買うタイミングはいつがいい？<br>' +
+      '・今月の仕事運は？<br>' +
+      '・旦那との旅行はいつがベスト？<br>' +
+      '・転職するなら何月？<br>' +
+      '・今日やるべきことは？</div>';
+    chatReady = true;
+  }
+  document.getElementById('chat-foot').style.display = 'flex';
+  setTimeout(function(){ document.getElementById('chat-input').focus(); }, 100);
+}
+
+function closeChat() {
+  document.getElementById('chat-overlay').classList.remove('open');
+}
+
+function showChatSetup() {
+  document.getElementById('chat-foot').style.display = 'none';
+  document.getElementById('chat-body').innerHTML =
+    '<div class="chat-setup">' +
+    '<h3>AIアドバイザーの設定</h3>' +
+    '<p class="desc">四柱推命に基づいたAIアドバイスを使うには<br>Google Gemini のAPIキーが必要です（無料）</p>' +
+    '<div class="steps">' +
+    '<strong>設定手順（2分でできます）</strong><br>' +
+    '1. 下のリンクをタップ<br>' +
+    '2. Googleアカウントでログイン<br>' +
+    '3.「APIキーを作成」をタップ<br>' +
+    '4. 表示されたキーを長押しでコピー<br>' +
+    '5. 下の入力欄に貼り付けて「設定完了」<br><br>' +
+    '<a href="https://aistudio.google.com/apikey" target="_blank">Google AI Studio を開く</a>' +
+    '</div>' +
+    '<input id="api-key-input" type="text" placeholder="AIzaSy... をここに貼り付け">' +
+    '<button onclick="saveKey()">設定完了</button>' +
+    '<p class="note">キーはこの端末にのみ保存されます（外部には送信されません）</p>' +
+    '</div>';
+}
+
+function saveKey() {
+  var key = document.getElementById('api-key-input').value.trim();
+  if (!key) return;
+  localStorage.setItem('fortune_ai_key', key);
+  chatReady = false;
+  openChat();
+}
+
+function getChatSystemPrompt() {
+  var today = new Date();
+  var gz = getDayGanzhi(today);
+  var meF = ME_DAILY[gz.stemIdx];
+  var husF = HUS_DAILY[gz.stemIdx];
+  var meBranch = ME_BRANCH[gz.branchIdx];
+  return 'あなたは四柱推命の専門家であり、パーソナル運勢アドバイザーです。以下の2人の命式データを完全に把握した上で、質問に対して具体的で実用的なアドバイスをしてください。\n\n' +
+    '━━━ なほこ（壬水・大海の水）━━━\n' +
+    '生年月日: 1997年1月20日（愛知県豊橋市）\n' +
+    '日干: 壬水 / 年柱: 丙子（偏財）/ 月柱: 辛丑（正印）/ 日柱: 壬戌\n' +
+    '性格: 知的で柔軟、水のように適応力がある。印星が強く学びが得意。\n\n' +
+    '【大運の流れ】\n' +
+    '5〜14歳: 庚子（偏印）→ 守られて育つ時期\n' +
+    '15〜24歳: 己亥（正官）→ 社会のルールを学ぶ時期\n' +
+    '25〜28歳: 戊戌（偏官）→ プレッシャーと成長の時期\n' +
+    '29〜38歳: 丁酉（正財）→ ★現在。安定と収入増の時期。堅実に資産を築ける。\n' +
+    '39〜48歳: 丙申（偏財）→ 大きなお金が動く時期\n\n' +
+    '【2026年（丙午年）= 偏財の年】\n' +
+    '月運: 1月:偏印(6), 2月:正印(7), 3月:比肩(6), 4月:劫財(5), 5月:食神(7), 6月:傷官(5), 7月:偏財(6), 8月:正財(8/年間最高), 9月:偏官(5), 10月:正官(7), 11月:偏印(6), 12月:正印(7)\n' +
+    '年間平均: 6.3 / ベスト月: 8月 / 注意月: 4月,6月,9月\n\n' +
+    '事業: 法人YOHAKU設立済み(2026年1月9日)。LINE構築・Webディレクション事業。\n' +
+    '趣味: 英会話、塗り絵、自然が好き。\n\n' +
+    '━━━ 旦那さん（甲木・大きな木）━━━\n' +
+    '生年月日: 1992年1月19日\n' +
+    '日干: 甲木 / 年柱: 辛未 / 月柱: 辛丑 / 日柱: 甲午\n' +
+    '性格: まっすぐで頑固、どっしり構えるタイプ。\n\n' +
+    '【二人の相性】\n' +
+    '壬水（なほこ）が甲木（旦那）を育てる関係（水生木）= 相性◎\n' +
+    'なほこが支え、旦那が成長するという良い循環。\n\n' +
+    '━━━ 今日の運勢（' + (today.getMonth()+1) + '/' + today.getDate() + ' ' + gz.stem + gz.branch + '日）━━━\n' +
+    'なほこ: ' + meF.star + '（' + meF.summary + '）/ ' + meBranch + '\n' +
+    '旦那さん: ' + husF.star + '（' + husF.summary + '）\n\n' +
+    '━━━ 回答ルール ━━━\n' +
+    '1. 四柱推命の理論（通変星・五行の相生相剋・大運・流年・月運）に基づいて回答する\n' +
+    '2. 「いつがいい？」系の質問には、具体的な月や時期を必ず提案する\n' +
+    '3. 二人の相性や五行バランスも考慮する\n' +
+    '4. 親しみやすい日本語で回答する。絵文字は使わない。\n' +
+    '5. 簡潔に回答する（200〜400文字程度）\n' +
+    '6. 質問者は「なほこ」本人。旦那さんのことも聞く場合がある\n' +
+    '7. 大運の正財期（29〜38歳）にいることを常に意識してアドバイスする';
+}
+
+function escHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
+
+async function sendChat() {
+  var input = document.getElementById('chat-input');
+  var sendBtn = document.getElementById('chat-send');
+  var msg = input.value.trim();
+  if (!msg) return;
+  input.value = '';
+  sendBtn.disabled = true;
+
+  var body = document.getElementById('chat-body');
+  body.innerHTML += '<div class="chat-msg user">' + escHtml(msg) + '</div>';
+  body.innerHTML += '<div class="chat-msg ai loading" id="chat-loading">考え中...</div>';
+  body.scrollTop = body.scrollHeight;
+
+  chatHistory.push({ role: 'user', parts: [{ text: msg }] });
+
+  var key = localStorage.getItem('fortune_ai_key');
+  try {
+    var res = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=' + key, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        systemInstruction: { parts: [{ text: getChatSystemPrompt() }] },
+        contents: chatHistory
+      })
+    });
+    var data = await res.json();
+    var el = document.getElementById('chat-loading');
+
+    if (data.error) {
+      el.innerHTML = '<b>エラー:</b> ' + escHtml(data.error.message) + '<br>APIキーを確認してください。';
+      el.classList.remove('loading');
+      el.removeAttribute('id');
+      chatHistory.pop();
+      if (data.error.code === 400 || data.error.code === 403) {
+        localStorage.removeItem('fortune_ai_key');
+        el.innerHTML += '<br><br><a href="#" onclick="chatReady=false;openChat();return false" style="color:var(--gold)">APIキーを再設定する</a>';
+      }
+      sendBtn.disabled = false;
+      return;
+    }
+
+    var reply = data.candidates[0].content.parts[0].text;
+    chatHistory.push({ role: 'model', parts: [{ text: reply }] });
+    el.innerHTML = reply.replace(/\n/g, '<br>');
+    el.classList.remove('loading');
+    el.removeAttribute('id');
+  } catch (e) {
+    var el = document.getElementById('chat-loading');
+    el.textContent = '通信エラーが発生しました。もう一度お試しください。';
+    el.classList.remove('loading');
+    el.removeAttribute('id');
+    chatHistory.pop();
+  }
+  sendBtn.disabled = false;
+  body.scrollTop = body.scrollHeight;
+}
 </script>
 </body>
 </html>
