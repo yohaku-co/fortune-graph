@@ -89,7 +89,18 @@
   .daily-score-track{flex:1;height:6px;background:#f0ebe5;border-radius:3px;overflow:hidden}
   .daily-score-fill{height:100%;border-radius:3px;transition:width .8s ease}
   .daily-score-num{font-size:.82rem;font-weight:800;min-width:24px;text-align:right}
-  .daily-advice{font-size:.7rem;color:var(--muted);line-height:1.7;margin-bottom:8px}
+  .daily-advice{font-size:.7rem;color:var(--muted);line-height:1.7;margin-bottom:10px}
+  .daily-tips{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:10px}
+  .daily-tip{background:#faf7f4;border-radius:8px;padding:8px 6px;text-align:center}
+  .daily-tip-label{font-size:.58rem;font-weight:700;color:var(--accent);margin-bottom:3px}
+  .daily-tip-text{font-size:.62rem;color:var(--muted);line-height:1.5}
+  .daily-detail-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:10px}
+  .daily-detail-item{background:#faf7f4;border-radius:8px;padding:8px 10px}
+  .daily-detail-label{font-size:.58rem;font-weight:700;margin-bottom:3px}
+  .daily-detail-label.work{color:#8a7560}.daily-detail-label.relation{color:#8a5060}.daily-detail-label.avoid{color:var(--danger)}
+  .daily-detail-text{font-size:.62rem;color:var(--muted);line-height:1.5}
+  .daily-branch-msg{font-size:.65rem;color:var(--muted);background:linear-gradient(135deg,#faf7f4,#f0ebe5);padding:8px 10px;border-radius:8px;margin-bottom:8px;line-height:1.6;border-left:3px solid var(--accent)}
+  .person-page[data-person="husband"] .daily-branch-msg{border-left-color:var(--blue)}
   .daily-lucky{font-size:.65rem;color:var(--accent);background:#faf7f4;padding:6px 10px;border-radius:8px;line-height:1.6}
   .daily-divider{border:none;border-top:1px dashed var(--border);margin:12px 0}
 </style>
@@ -442,29 +453,139 @@ function getDayGanzhi(date) {
 }
 
 var ME_DAILY = [
-  { star:'食神', score:7, summary:'表現力が輝く日', advice:'自然体で過ごすのがベスト。SNS投稿や新アイデアを形にするのに最適。お昼は好きなものを。', lucky:'緑色のもの・カフェ・公園' },
-  { star:'傷官', score:4, summary:'感性が鋭い日', advice:'言葉がキツくなりやすいので大事な連絡は控えめに。アートや音楽など感性を活かす作業は◎', lucky:'花・ハーブティー・静かな場所' },
-  { star:'偏財', score:6, summary:'行動力UPの日', advice:'新しい出会いやチャンスが巡る日。営業・提案など対外的な動きに向いている。', lucky:'オレンジ色・新しいお店・南向き' },
-  { star:'正財', score:7, summary:'安定した日', advice:'堅実な判断ができる日。契約確認や経理作業に向いている。コツコツ作業を片付けよう。', lucky:'整理整頓・温かい飲み物・和食' },
-  { star:'偏官', score:3, summary:'プレッシャーの日', advice:'外部からの圧を感じやすい。無理しないで、早めに仕事を切り上げてゆっくりお風呂に。', lucky:'入浴剤・チョコレート・早寝' },
-  { star:'正官', score:5, summary:'規律の日', advice:'ルーティンを守ると安定する日。新しいことより既存タスクの整理を。丁寧な対応を心がけて。', lucky:'手帳・ToDoリスト・身だしなみ' },
-  { star:'偏印', score:8, summary:'学びが吸収される日', advice:'英会話やスキル学習に最適！直感が冴える。メンターからのアドバイスがスッと入ってくる。', lucky:'本・オンライン講座・図書館' },
-  { star:'正印', score:8, summary:'知性が輝く日', advice:'情報収集や分析に最適。読書も◎。お気に入りのカフェでゆっくり自分を大事にして。', lucky:'シルバー小物・紅茶・瞑想' },
-  { star:'比肩', score:6, summary:'自分らしくいられる日', advice:'等身大でOK。直感を信じて。同じ価値観の人と過ごすとエネルギーが充電される。', lucky:'水辺・ブルー系・自分磨き' },
-  { star:'劫財', score:5, summary:'出費に注意の日', advice:'衝動買いや人に流される出費に注意。SNSの見すぎにも気をつけて。', lucky:'貯金アプリ確認・断捨離・白色' }
+  { star:'食神', score:7, summary:'表現力が輝く日',
+    advice:'自然体で過ごすのがベスト。インスピレーションが降りてきやすい日なので、SNS投稿・企画書・新しいアイデアを形にするのに最適。',
+    am:'午前中にクリエイティブ作業を。ひらめきが冴える時間帯', pm:'好きなランチでエネルギーチャージ。カフェ作業も◎', eve:'塗り絵やアートなど趣味の時間を確保して。心が整う',
+    work:'新企画やアイデア出しに最適。クライアントへの提案も通りやすい', relation:'自然体で接すると好感度UP。旦那さんとも穏やかに過ごせる',
+    avoid:'食べ過ぎ注意。楽しさ優先でタスクを後回しにしがち', lucky:'緑色のもの・カフェ・公園' },
+  { star:'傷官', score:4, summary:'感性が鋭い日',
+    advice:'直感は鋭いが言葉がキツくなりやすい日。大事なメールやLINEは一晩寝かせて。文章力は冴えるのでブログやLP作成は◎',
+    am:'ゆっくり起きてOK。急いで動くとイライラしやすい', pm:'一人ランチが◎。人と食べると余計なことを言いがち', eve:'好きな音楽を聴いてリラックス。長めのお風呂が吉',
+    work:'文章力が冴える日。ブログ・LP作成に向いている。クライアント対応は控えめに', relation:'旦那さんへのダメ出しが出やすい。「ありがとう」を意識して伝えて',
+    avoid:'SNSでの発言に注意。後悔するような投稿をしがち', lucky:'花・ハーブティー・静かな音楽' },
+  { star:'偏財', score:6, summary:'行動力UPの日',
+    advice:'新しい出会いやチャンスが巡る日。営業・提案・交渉など外に向けた動きに向いている。お金の使い方は大胆になりがち。',
+    am:'早起きして活動的に。人との約束を入れるのに良い', pm:'ランチミーティングが吉。新しい人脈が広がる', eve:'お金の整理をすると◎。今日使った分を振り返って',
+    work:'営業・提案・新規クライアントとの接触に最適。見積もり提出もOK', relation:'社交的になれる日。積極的に人と会おう。紹介が広がるかも',
+    avoid:'衝動買い注意。「今だけ」「限定」に惑わされないで', lucky:'オレンジ色・新しいお店・南向き' },
+  { star:'正財', score:7, summary:'安定した日',
+    advice:'堅実な判断ができる日。お金まわりの整理、契約書の確認、経理作業に最適。コツコツした作業がはかどる。',
+    am:'朝のルーティンを丁寧に。白湯を飲んで心を落ち着けて', pm:'事務作業やお金の管理に最適。請求書発行も◎', eve:'家でゆっくり過ごすのが吉。手料理すると運気UP',
+    work:'経理・契約・見積もり作成に向いている。数字に強くなる日', relation:'家庭的な雰囲気を大切に。旦那さんとの将来の話もスムーズ',
+    avoid:'冒険は控えて。今日は「守り」の日。新しいことは明日以降に', lucky:'整理整頓・温かい飲み物・和食' },
+  { star:'偏官', score:3, summary:'プレッシャーの日',
+    advice:'外部からの圧を感じやすい日。締切やクライアントからの要求にストレスを感じるかも。今日は60%の力でちょうどいい。',
+    am:'起きるのがつらいかも。無理せずストレッチから始めて', pm:'軽めのランチで。胃に負担をかけない食事を選んで', eve:'20時以降は仕事のことを考えない。早めにベッドへ',
+    work:'大きな決断は先送りでOK。ルーティン業務だけこなして', relation:'上から目線のアドバイスにイラっとしがち。受け流して',
+    avoid:'頑張りすぎ注意。完璧主義を手放す日。「まあいいか」でOK', lucky:'入浴剤・チョコレート・早寝' },
+  { star:'正官', score:5, summary:'規律の日',
+    advice:'ルーティンを守ると安定する日。新しいことより既存タスクの整理を。丁寧な対応が信頼を生む。',
+    am:'身だしなみを整えると運気UP。きちんとした格好で', pm:'整理整頓の時間に使うと◎。デスクやスマホのデータ整理', eve:'明日のToDoリストを作ると安心して眠れる',
+    work:'丁寧なメール返信を心がけて。真面目な対応が評価される', relation:'礼儀正しさが信頼を生む。目上の人との関係が良好',
+    avoid:'柔軟性が落ちがち。「こうあるべき」に縛られすぎないで', lucky:'手帳・ToDoリスト・きちんとした服' },
+  { star:'偏印', score:8, summary:'学びが吸収される日',
+    advice:'英会話・新しいスキル・オンライン講座が身につきやすい日。直感も冴えるので、メンターや先輩からのアドバイスがスッと入ってくる。',
+    am:'朝読書やポッドキャストが◎。情報が頭に入りやすい', pm:'新しいツールやアプリを試すのに最適。AI活用の検討も', eve:'オンライン講座や英会話レッスンが吉。夜の学びが定着する',
+    work:'新しいスキルを仕事に活かせる日。ツール導入や業務改善の提案に', relation:'師匠的な人からのアドバイスが的確。素直に聞いて吸収',
+    avoid:'考えすぎて行動できなくなることも。「まずやってみる」精神で', lucky:'本・オンライン講座・図書館' },
+  { star:'正印', score:8, summary:'知性が輝く日',
+    advice:'情報収集・分析・読書に最適。品質の高いアウトプットができる日。お気に入りのカフェでゆっくり考え事をすると良いアイデアが浮かぶ。',
+    am:'瞑想や深呼吸で1日をスタート。心が穏やかに整う', pm:'カフェで考え事をすると良いアイデアが。企画書作成に◎', eve:'日記やジャーナリングで1日を振り返ると気づきが多い',
+    work:'分析・企画書・戦略立てに最適。知的作業の生産性が高い', relation:'穏やかな雰囲気が周りを安心させる。相談を受けることも',
+    avoid:'内にこもりすぎないで。適度に外の空気を吸いに行こう', lucky:'シルバー小物・紅茶・瞑想・カフェ' },
+  { star:'比肩', score:6, summary:'自分らしくいられる日',
+    advice:'等身大の自分でOK。直感を信じて動くと吉。同じ価値観のフリーランス仲間や起業家と過ごすとエネルギーが充電される。',
+    am:'水回りの掃除をすると運気UP。洗顔を丁寧に', pm:'同業者やフリーランス仲間との情報交換が吉', eve:'自分磨きの時間に。スキンケアやボディケアを丁寧に',
+    work:'独立心が強まる日。自分の判断を信じて進めてOK', relation:'対等な関係の人と過ごすと充電される。上下関係はストレスに',
+    avoid:'人と比べない。SNSのキラキラ投稿を見ると落ち込むかも', lucky:'水辺・ブルー系・自分磨き・スパ' },
+  { star:'劫財', score:5, summary:'出費に注意の日',
+    advice:'衝動買いや人に流される出費に注意の日。値引き要求が来やすいので、安売りしないで。自分の価値を信じて。',
+    am:'財布の中身を確認してからお出かけ。予算を決めて', pm:'ウィンドウショッピングは避けて。物欲が刺激される日', eve:'節約ごはんでも丁寧に作ると満足感UP',
+    work:'値引き交渉が来やすい日。安易に値下げしないで', relation:'人間関係で損得を気にしがち。純粋に楽しむことを意識',
+    avoid:'SNSの比較で落ち込みやすい。見る時間を30分に制限して', lucky:'貯金アプリ確認・断捨離・白色・自炊' }
+];
+
+var ME_BRANCH = [
+  '直感が冴えわたる日。水のエネルギーが味方。ひらめきをメモして',
+  '足元を固める日。急がず着実に。書類整理やデータ整理が捗る',
+  '行動力が増す日。午前中に大事なことを片付けると◎',
+  '人間関係が活性化。紹介や口コミが広がりやすい。人に会おう',
+  '変化の兆し。新しいことを始めるきっかけが生まれるかも',
+  '情熱的だがエネルギーを消耗しやすい。こまめに休憩を',
+  '活動のピーク。ただし壬水は消耗しやすいのでクールダウンを',
+  '穏やかに過ごせる日。無理しなければすべてうまくいく',
+  '頭が冴える日。金が水を生む相生の力。資料作成に◎',
+  '美意識が高まる。ファッションやデザイン、ブランディングに力を',
+  '約束を守ると信頼UP。忠実にコツコツ取り組む日',
+  '内省の時。自分と向き合う時間が大切。日記やジャーナリングが◎'
 ];
 
 var HUS_DAILY = [
-  { star:'比肩', score:6, summary:'自分らしくいられる日', advice:'自分のペースで仕事を進めるのが吉。ライバル意識は控えめに。', lucky:'森林浴・木製品・朝の散歩' },
-  { star:'劫財', score:5, summary:'出費に注意の日', advice:'衝動的な判断は避ける。お金の貸し借りは特に注意。自分軸で動いて。', lucky:'自炊・節約意識・植物' },
-  { star:'食神', score:7, summary:'リラックスの日', advice:'楽しいことが自然と集まる日。趣味や好きなことに時間を使うと吉。', lucky:'好きな料理・日光浴・ゲーム' },
-  { star:'傷官', score:4, summary:'言葉に注意の日', advice:'感性が鋭くなるが言い過ぎに注意。奥さんとの会話は特に丁寧に。', lucky:'静かな場所・読書・キャンドル' },
-  { star:'偏財', score:6, summary:'行動力UPの日', advice:'新しいチャンスに出会える日。営業や対外的な活動に向いている。少し大胆にOK。', lucky:'外出・新しい場所・ランチ' },
-  { star:'正財', score:7, summary:'安定の日', advice:'堅実な判断ができる日。家計の見直しや書類整理に最適。家庭を大事に。', lucky:'家庭料理・掃除・家族の時間' },
-  { star:'偏官', score:3, summary:'プレッシャーの日', advice:'上司や外部からの圧がかかりやすい。無理せず、早めに帰宅して。', lucky:'入浴・早寝・好きな音楽' },
-  { star:'正官', score:5, summary:'社会的な日', advice:'仕事での評価が上がりやすい。ルールを守って丁寧に仕事をすると信頼UP。', lucky:'身だしなみ・挨拶・スーツ' },
-  { star:'偏印', score:8, summary:'学びの日', advice:'スキルアップに最適。資格勉強や技術的な学びが身につきやすい。', lucky:'勉強・技術書・セミナー' },
-  { star:'正印', score:8, summary:'知性が冴える日', advice:'分析力が上がる日。仕事の戦略立てに向いている。奥さんに優しくすると運気UP。', lucky:'読書・計画立て・お茶の時間' }
+  { star:'比肩', score:6, summary:'自分らしくいられる日',
+    advice:'自分のペースで仕事を進めるのが吉。ライバル意識が出やすいが、比較より自分の成長にフォーカスして。',
+    am:'朝の散歩が吉。自然の中で深呼吸すると頭がクリアに', pm:'自分のペースでランチ。単独行動が吉', eve:'好きなことに没頭する時間を確保。ゲームや趣味もOK',
+    work:'自分の判断で進めてOK。ただし周りへの報連相は忘れずに', relation:'同僚との関係は良好。ただし主導権争いに注意',
+    avoid:'頑固になりやすい日。「自分が正しい」を一旦手放して', lucky:'森林浴・木製品・朝の散歩' },
+  { star:'劫財', score:5, summary:'出費に注意の日',
+    advice:'衝動的な判断は避ける日。お金の貸し借りは特に注意。友人からの誘いに流されやすいので自分軸で。',
+    am:'コンビニの寄り道を控えて。余計な出費の元に', pm:'付き合いランチは控えめに。本当に行きたいかを考えて', eve:'外食より自炊。奥さんと一緒に料理すると家庭運UP',
+    work:'後輩に仕事を取られる感覚があるかも。気にしすぎないで', relation:'奥さんとのお金の使い方で意見が割れるかも。冷静に話し合って',
+    avoid:'友人の「おごるよ」に甘えすぎない。対等な関係を大切に', lucky:'自炊・節約意識・植物・公園' },
+  { star:'食神', score:7, summary:'リラックスの日',
+    advice:'楽しいことが自然と集まる日。肩の力を抜いて過ごすと吉。趣味や好きなことに時間を使うとエネルギーが充電される。',
+    am:'好きな朝食をしっかり食べてスタート。朝からご機嫌に', pm:'楽しんで仕事ができる時間帯。クリエイティブな発想が◎', eve:'飲み会や食事の誘いは受けてOK。美味しいものを食べて充電',
+    work:'楽しみながら仕事ができる日。アイデア出しやブレストに◎', relation:'周りを明るくする雰囲気。奥さんにも優しくできる日',
+    avoid:'楽しさ優先で仕事が後回しになりがち。締切だけは確認', lucky:'好きな料理・日光浴・趣味の時間' },
+  { star:'傷官', score:4, summary:'言葉に注意の日',
+    advice:'感性が鋭くなるが、正論で人を傷つけやすい日。技術的な集中作業には向いている。会議は最小限にして黙々と。',
+    am:'あまり話しかけられたくない気分かも。マイペースでOK', pm:'一人で集中できる環境を作って。カフェよりデスク', eve:'静かに過ごすのが吉。読書や映画鑑賞でクールダウン',
+    work:'技術的な集中作業に向いている。会議は最小限に', relation:'奥さんへの言い方がキツくなりがち。「ありがとう」を意識して',
+    avoid:'正論で相手を追い詰めない。言い方を工夫して', lucky:'静かな場所・読書・イヤホン' },
+  { star:'偏財', score:6, summary:'行動力UPの日',
+    advice:'新しいチャンスに出会える日。外に出ると良いことがある。営業や対外的な活動に向いている。少し大胆に動いてOK。',
+    am:'アクティブに動き出すと吉。外出の予定を入れよう', pm:'ランチミーティングが吉。新しい人脈の可能性も', eve:'今日の出費を振り返って。大きな買い物は一晩寝かせて',
+    work:'新規案件や営業に向いている日。チャンスを掴みに行こう', relation:'社交的になれる。新しい出会いの可能性も',
+    avoid:'大きな買い物は一晩寝かせて判断。「今だけ」に惑わされない', lucky:'外出・新しい場所・ランチミーティング' },
+  { star:'正財', score:7, summary:'安定の日',
+    advice:'堅実な判断ができる日。家計の見直しや書類整理に最適。家庭を大事にすると全体運がアップする。',
+    am:'家事を手伝うと家庭運UP。ゴミ出しや食器洗いを率先して', pm:'堅実に仕事を進められる。書類やデータ整理に最適', eve:'早めの帰宅が吉。奥さんと一緒にご飯を食べよう',
+    work:'数字に強くなる日。経費精算やレポート作成に◎', relation:'家庭を大事にすると全体運UP。「今日は早く帰る」を実行して',
+    avoid:'冒険は控えて。安全策でいく日。ギャンブルは絶対NG', lucky:'家庭料理・掃除・家族の時間' },
+  { star:'偏官', score:3, summary:'プレッシャーの日',
+    advice:'上司や取引先からの圧がかかりやすい日。無理をすると体調に出る。今日はできることだけ確実にやって、早めに帰ろう。',
+    am:'やる気が出にくいかも。コーヒーでゆっくりスイッチを入れて', pm:'最低限のタスクだけに集中。完璧を求めないで', eve:'仕事のことは忘れてリラックス。お風呂にゆっくり入って',
+    work:'上司からの指示に振り回される日。マイペースを保って', relation:'権威的な人にストレスを感じる。距離を取って受け流して',
+    avoid:'無理は禁物。体調にも影響が出やすい。お酒も控えめに', lucky:'入浴・早寝・好きな音楽・ストレッチ' },
+  { star:'正官', score:5, summary:'社会的な日',
+    advice:'仕事での評価が上がりやすい日。ルールを守って丁寧に取り組むと信頼がアップする。身だしなみも意識して。',
+    am:'身だしなみを整えてスタート。第一印象が大事な日', pm:'真面目に丁寧に取り組むと評価される。メールは特に丁寧に', eve:'明日の準備をしておくと安心。服やカバンの整理を',
+    work:'評価される日。報告書や提案は丁寧に仕上げよう', relation:'目上の人からの評価が上がる。礼儀正しさが武器になる',
+    avoid:'堅くなりすぎないで。適度にリラックスも必要', lucky:'身だしなみ・きちんとした服・挨拶' },
+  { star:'偏印', score:8, summary:'学びの日',
+    advice:'新しい技術やスキルの習得に最適な日。資格勉強も身につきやすい。先輩や上司からの助言が的確なので素直に聞いて。',
+    am:'朝の読書やニュースチェックが吉。情報が頭に入る', pm:'新しいツールや技術を試してみよう。効率UPのチャンス', eve:'夜の勉強が定着しやすい。30分でも集中して',
+    work:'スキルアップに最適。新しい手法やツールの導入を検討して', relation:'先輩や上司からの助言が的確。素直に聞くと成長が加速',
+    avoid:'情報に振り回されないように。取捨選択が大事', lucky:'技術書・セミナー・勉強アプリ' },
+  { star:'正印', score:8, summary:'知性が冴える日',
+    advice:'分析力がアップする日。データを使った提案が通りやすい。奥さんに優しくすると家庭運が大幅UP。',
+    am:'ゆっくり起きてOK。急がない方がいい日。朝は読書を', pm:'分析やデータ処理に向いている。集中力が高い時間帯', eve:'奥さんに「ありがとう」と伝えよう。家庭運が大きくUP',
+    work:'分析力が冴える日。データや根拠に基づく提案が◎', relation:'奥さんに優しくすると家庭運が大幅UP。小さな気遣いが効く',
+    avoid:'頭でっかちにならないで。理屈より気持ちを大事にする場面も', lucky:'読書・計画立て・お茶の時間・感謝' }
+];
+
+var HUS_BRANCH = [
+  '根に水が届く日。滋養を受けて成長できる。内面の充実を感じる',
+  '土に根を下ろす日。地道な作業が報われる。コツコツが吉',
+  '木のエネルギー最高潮。行動力で勝負できる日。攻めの姿勢で',
+  '仲間との繋がりが広がる。協力体制を作ると◎',
+  '大地から芽吹く日。新しいプロジェクトの着手に向いている',
+  'エネルギーが散りやすい。集中力を保って。1つずつ片付けて',
+  'パワフルだが消耗も激しい。ペース配分を意識して',
+  '穏やかに過ごせる。家庭的な時間を大切にすると◎',
+  '金に木が剋される。周囲からのプレッシャーを感じやすい',
+  '評価が厳しめに感じる日。気にしすぎないで。実力はある',
+  '安定した土台。コツコツが報われる日。地道な努力が吉',
+  '水の恵みで潤う日。リフレッシュに最適。水辺へ行くのも◎'
 ];
 
 function branchMod(bIdx, person) {
@@ -494,25 +615,40 @@ function starColor(s) {
   return 'var(--blue)';
 }
 
-function renderDayCard(date, data, isToday) {
+function renderDayCard(date, data, branchData, isToday) {
   var gz = getDayGanzhi(date);
   var person = data === ME_DAILY ? 'me' : 'husband';
   var f = data[gz.stemIdx];
+  var bMsg = branchData[gz.branchIdx];
   var score = Math.max(1, Math.min(10, f.score + branchMod(gz.branchIdx, person)));
   var sc = scoreColor(score);
-  var m = date.getMonth() + 1;
+  var mo = date.getMonth() + 1;
   var d = date.getDate();
   var dow = DAYS[date.getDay()];
 
-  return '<div class="daily-card' + (isToday ? '' : ' tomorrow') + '">' +
+  var h = '<div class="daily-card' + (isToday ? '' : ' tomorrow') + '">' +
     '<span class="daily-day-label ' + (isToday ? 'today-label' : 'tomorrow-label') + '">' + (isToday ? '今日' : '明日') + '</span>' +
-    '<div class="daily-date">' + m + '/' + d + '（' + dow + '） ' + gz.stem + gz.branch + '日</div>' +
+    '<div class="daily-date">' + mo + '/' + d + '(' + dow + ')  ' + gz.stem + gz.branch + '日</div>' +
     '<div class="daily-star-line"><span class="daily-star" style="background:' + starColor(score) + '">' + f.star + '</span>' +
     '<span class="daily-summary">' + f.summary + '</span></div>' +
     '<div class="daily-score-bar"><div class="daily-score-track"><div class="daily-score-fill" style="width:' + (score * 10) + '%;background:' + sc.bar + '"></div></div>' +
     '<div class="daily-score-num" style="color:' + sc.num + '">' + score + '</div></div>' +
     '<div class="daily-advice">' + f.advice + '</div>' +
+    '<div class="daily-tips">' +
+      '<div class="daily-tip"><div class="daily-tip-label">朝</div><div class="daily-tip-text">' + f.am + '</div></div>' +
+      '<div class="daily-tip"><div class="daily-tip-label">昼</div><div class="daily-tip-text">' + f.pm + '</div></div>' +
+      '<div class="daily-tip"><div class="daily-tip-label">夜</div><div class="daily-tip-text">' + f.eve + '</div></div>' +
+    '</div>' +
+    '<div class="daily-detail-grid">' +
+      '<div class="daily-detail-item"><div class="daily-detail-label work">仕事</div><div class="daily-detail-text">' + f.work + '</div></div>' +
+      '<div class="daily-detail-item"><div class="daily-detail-label relation">対人</div><div class="daily-detail-text">' + f.relation + '</div></div>' +
+    '</div>' +
+    '<div class="daily-branch-msg">' + BRANCHES[gz.branchIdx] + 'の日 : ' + bMsg + '</div>' +
+    '<div class="daily-detail-grid" style="grid-template-columns:1fr">' +
+      '<div class="daily-detail-item" style="background:#fdf5f5"><div class="daily-detail-label avoid">注意</div><div class="daily-detail-text">' + f.avoid + '</div></div>' +
+    '</div>' +
     '<div class="daily-lucky">Lucky : ' + f.lucky + '</div></div>';
+  return h;
 }
 
 function renderDaily() {
@@ -522,11 +658,11 @@ function renderDaily() {
   var timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0') + ' 更新';
 
   var meHtml = '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
-    renderDayCard(now, ME_DAILY, true) + renderDayCard(tmrw, ME_DAILY, false) + '</div>';
+    renderDayCard(now, ME_DAILY, ME_BRANCH, true) + renderDayCard(tmrw, ME_DAILY, ME_BRANCH, false) + '</div>';
   document.getElementById('daily-me').innerHTML = meHtml;
 
   var husHtml = '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
-    renderDayCard(now, HUS_DAILY, true) + renderDayCard(tmrw, HUS_DAILY, false) + '</div>';
+    renderDayCard(now, HUS_DAILY, HUS_BRANCH, true) + renderDayCard(tmrw, HUS_DAILY, HUS_BRANCH, false) + '</div>';
   document.getElementById('daily-husband').innerHTML = husHtml;
 }
 
