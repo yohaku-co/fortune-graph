@@ -103,6 +103,38 @@
   .person-page[data-person="husband"] .daily-branch-msg{border-left-color:var(--blue)}
   .daily-lucky{font-size:.75rem;color:var(--accent);background:#faf7f4;padding:8px 12px;border-radius:8px;line-height:1.7}
   .daily-divider{border:none;border-top:1px dashed var(--border);margin:12px 0}
+  .month-highlight{margin:16px 16px 0;padding:16px;background:linear-gradient(135deg,#ede6df,#f5f0eb);border-radius:14px;border:1px solid var(--border)}
+  .month-hl-title{font-size:.82rem;font-weight:700;color:var(--gold);margin-bottom:8px}
+  .month-hl-star{display:inline-block;font-size:.72rem;color:#fff;padding:3px 12px;border-radius:10px;margin-right:6px}
+  .month-hl-summary{font-size:.82rem;font-weight:700;margin-bottom:8px}
+  .month-hl-text{font-size:.75rem;color:var(--muted);line-height:1.7}
+  .month-hl-tags{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+  .month-hl-tag{font-size:.65rem;padding:3px 10px;border-radius:12px;font-weight:700}
+  .couple-week{margin:0 16px 8px;padding:14px;background:var(--card);border-radius:12px;border:1px solid var(--border)}
+  .couple-week-title{font-size:.82rem;font-weight:700;color:var(--gold);margin-bottom:10px}
+  .couple-row{display:flex;gap:6px;margin-bottom:8px;align-items:flex-start}
+  .couple-week-label{font-size:.68rem;font-weight:700;color:var(--accent);min-width:52px;padding-top:2px}
+  .couple-week-text{font-size:.72rem;color:var(--muted);line-height:1.6;flex:1}
+  .couple-week-text .good{color:var(--success);font-weight:700}.couple-week-text .warn{color:var(--danger);font-weight:700}
+  .best-days{margin:0 16px 8px;padding:14px;background:var(--card);border-radius:12px;border:1px solid var(--border)}
+  .best-days-title{font-size:.82rem;font-weight:700;color:var(--gold);margin-bottom:10px}
+  .best-day-item{display:flex;gap:8px;margin-bottom:8px;align-items:flex-start}
+  .best-day-date{font-size:.72rem;font-weight:700;color:var(--gold);min-width:46px;padding-top:1px}
+  .best-day-desc{font-size:.72rem;color:var(--muted);line-height:1.5;flex:1}
+  .best-day-tag{font-size:.58rem;padding:2px 8px;border-radius:8px;font-weight:700;white-space:nowrap}
+  .mood-tracker{margin:0 16px 8px;padding:14px;background:var(--card);border-radius:12px;border:1px solid var(--border)}
+  .mood-title{font-size:.82rem;font-weight:700;color:var(--gold);margin-bottom:8px}
+  .mood-today{display:flex;gap:0;justify-content:center;margin-bottom:12px}
+  .mood-btn{flex:1;padding:10px 0;border:1px solid var(--border);background:var(--bg);font-size:.85rem;cursor:pointer;transition:all .2s;text-align:center}
+  .mood-btn:first-child{border-radius:10px 0 0 10px}.mood-btn:last-child{border-radius:0 10px 10px 0}
+  .mood-btn.selected{background:var(--gold);color:#fff;border-color:var(--gold);font-weight:700}
+  .mood-label{font-size:.62rem;display:block;margin-top:2px}
+  .mood-history{display:flex;gap:3px;flex-wrap:wrap;justify-content:center}
+  .mood-dot{width:18px;height:18px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.52rem;color:#fff;font-weight:700;position:relative}
+  .mood-dot .mood-score{position:absolute;bottom:-12px;font-size:.45rem;color:var(--muted);font-weight:400}
+  .mood-legend{display:flex;gap:10px;justify-content:center;margin-top:14px;font-size:.6rem;color:var(--muted)}
+  .mood-legend-dot{width:10px;height:10px;border-radius:3px;display:inline-block;vertical-align:middle;margin-right:3px}
+  .mood-match{text-align:center;font-size:.72rem;color:var(--accent);font-weight:700;margin-top:8px}
   .chat-fab{position:fixed;bottom:20px;right:20px;background:linear-gradient(135deg,var(--gold),#a07848);color:#fff;border:none;padding:14px 22px;border-radius:30px;font-size:.78rem;font-weight:700;cursor:pointer;box-shadow:0 4px 16px rgba(0,0,0,.18);z-index:100;letter-spacing:.05em;transition:transform .2s}
   .chat-fab:active{transform:scale(.95)}
   .chat-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:var(--bg);z-index:200;display:none;flex-direction:column}
@@ -858,17 +890,215 @@ function renderDayCard(date, data, branchData, isToday) {
   return h;
 }
 
+var ME_MONTH = [
+  {m:1,star:'正官',score:4,summary:'年始はまだ重め',advice:'計画を立てる月に。無理な新規案件は取らない',tags:['仕事']},
+  {m:2,star:'偏印',score:7,summary:'サポート到来',advice:'新しいスキル習得に最適。英会話やAIツール学習を',tags:['仕事','健康']},
+  {m:3,star:'正印',score:7,summary:'学びに最適！',advice:'英会話やスキル学習が最も身につく月。インプット重視で',tags:['仕事']},
+  {m:4,star:'比肩',score:6,summary:'自分らしさが戻る',advice:'心が安定。自分のペースで動ける月',tags:[]},
+  {m:5,star:'劫財',score:5,summary:'出費注意',advice:'衝動買いを避ける。ライバルに焦らないで',tags:['お金']},
+  {m:6,star:'食神',score:7,summary:'楽しさ・創造性UP',advice:'新しいことを始めるなら今。クリエイティブ活動に◎',tags:['仕事']},
+  {m:7,star:'傷官',score:4,summary:'言葉に注意',advice:'まさやとの口喧嘩に注意。大事な話は書面で',tags:['人間関係']},
+  {m:8,star:'偏財',score:8,summary:'お金のチャンス！',advice:'新案件の獲得・値上げ交渉に最適。攻めの月',tags:['お金','仕事']},
+  {m:9,star:'正財',score:9,summary:'今年のベスト月',advice:'大きな契約・収入増に最適。チャンスを逃さないで',tags:['お金']},
+  {m:10,star:'偏官',score:3,summary:'今年一番キツい月',advice:'偏官トリプル。休む月と決める。新規案件は断って',tags:['健康','仕事']},
+  {m:11,star:'正官',score:6,summary:'少しずつ回復',advice:'穏やかに過ごす月。来月への準備期間',tags:[]},
+  {m:12,star:'偏印',score:7,summary:'年末は穏やか',advice:'来年への充電期間。年末の振り返りを',tags:['健康']}
+];
+var HUS_MONTH = [
+  {m:1,star:'正財',score:6,summary:'安定した月',advice:'堅実に過ごせる。年始の計画を立てよう',tags:[]},
+  {m:2,star:'偏官',score:5,summary:'プレッシャーあり',advice:'寅（木）が味方。自分のペースを大切に',tags:[]},
+  {m:3,star:'正官',score:7,summary:'良い月',advice:'卯（木）＝ホームグラウンド。社会的な評価UP',tags:['仕事']},
+  {m:4,star:'偏印',score:7,summary:'サポート到来',advice:'壬（水）が甲（木）を育てる。旅行にも◎',tags:['仕事']},
+  {m:5,star:'正印',score:7,summary:'学びの月',advice:'穏やかに過ごせる。新しいスキル習得に◎',tags:[]},
+  {m:6,star:'比肩',score:6,summary:'自分らしさが出る',advice:'午（火）で少し消耗も。ペース配分を意識',tags:[]},
+  {m:7,star:'劫財',score:5,summary:'競争・出費あり',advice:'人間関係の摩擦にも注意。お金の管理を',tags:['人間関係']},
+  {m:8,star:'食神',score:7,summary:'リラックス月',advice:'趣味やレジャーに◎。デートに最適',tags:[]},
+  {m:9,star:'傷官',score:5,summary:'言葉がきつくなりやすい',advice:'口論に注意。感性は鋭いので創作活動に◎',tags:['人間関係']},
+  {m:10,star:'偏財',score:6,summary:'お金が動く月',advice:'大きな買い物は慎重に。チャンスもある',tags:['お金']},
+  {m:11,star:'正財',score:7,summary:'安定の月',advice:'経済的にも精神的にも◎。落ち着いて過ごせる',tags:[]},
+  {m:12,star:'偏官',score:5,summary:'年末にプレッシャー',advice:'子（水）が木を支えてくれる。無理しないで',tags:[]}
+];
+
+var COUPLE_WEEKS_2026 = {
+  1:[{w:'第1週',text:'二人とも控えめなスタート。焦らず計画を立てる週に'},{w:'第2週',text:'なほこの体調注意。まさやがサポートして'},{w:'第3週',text:'穏やかな週。二人で今年の目標を話し合って'},{w:'第4週',text:'月末の忙しさに注意。お互い労いの言葉を'}],
+  2:[{w:'第1週',text:'<span class="good">◎ 学びの週。</span>二人で新しいことを始めるのに最適'},{w:'第2週',text:'なほこにサポート到来。まさやは見守って'},{w:'第3週',text:'コミュニケーション良好。大事な話をするなら今週'},{w:'第4週',text:'まさやにプレッシャー。なほこは「頑張ってるね」と一言'}],
+  3:[{w:'第1週',text:'<span class="good">◎ 二人とも好調。</span>お出かけやデートに◎'},{w:'第2週',text:'学びの運気が高い。情報交換し合うと◎'},{w:'第3週',text:'なほこの知性が輝く。アドバイスを素直に聞いて'},{w:'第4週',text:'月末は少しお疲れモード。早めに休もう'}],
+  4:[{w:'第1週',text:'<span class="good">◎ 旅行に最適！</span>二人とも印星の月。穏やか'},{w:'第2週',text:'まさやにサポート到来。新しい体験を二人で'},{w:'第3週',text:'なほこは自分らしさを取り戻す。好きにさせてあげて'},{w:'第4週',text:'GWの計画を立てよう。自然の多い場所が◎'}],
+  5:[{w:'第1週',text:'GWは楽しく！ただし出費管理を。予算を決めて出かけて'},{w:'第2週',text:'<span class="warn">出費注意の週。</span>衝動買いを避けて'},{w:'第3週',text:'まさやの学び月。なほこは静かに見守って'},{w:'第4週',text:'月末は落ち着く。来月のプランを立てよう'}],
+  6:[{w:'第1週',text:'<span class="good">◎ なほこの創造力UP。</span>新しいことに挑戦しよう'},{w:'第2週',text:'まさやは自分のペースを大事に。干渉しすぎないで'},{w:'第3週',text:'楽しいイベントを計画すると◎。食事会やBBQなど'},{w:'第4週',text:'来月の7月は要注意。心の準備を'}],
+  7:[{w:'第1週',text:'<span class="warn">二人ともイライラ週。</span>距離を取る勇気も大事'},{w:'第2週',text:'<span class="warn">口喧嘩注意。</span>言いたいことは一晩寝かせて'},{w:'第3週',text:'少し落ち着く。仲直りのタイミング。外食で気分転換'},{w:'第4週',text:'月末は無理せず。お互いの一人時間を確保して'}],
+  8:[{w:'第1週',text:'<span class="good">◎ デートに最適！</span>まさや食神月×なほこ偏財月'},{w:'第2週',text:'<span class="good">◎ なほこお金のチャンス。</span>まさやが応援すると◎'},{w:'第3週',text:'思い出作りの週。写真をたくさん撮ろう'},{w:'第4週',text:'夏の疲れに注意。二人でリフレッシュを'}],
+  9:[{w:'第1週',text:'<span class="good">◎ なほこ今年最高の週！</span>大きなチャンスが来る'},{w:'第2週',text:'まさや傷官月。言葉がキツくなりがち。なほこは受け流して'},{w:'第3週',text:'なほこは好調だがまさやが不安定。サポート側に回って'},{w:'第4週',text:'まさやに「大丈夫だよ」と伝えて。それだけで救われる'}],
+  10:[{w:'第1週',text:'<span class="warn">なほこ要注意週。</span>偏官トリプル。とにかく休んで'},{w:'第2週',text:'<span class="warn">二人とも無理禁止。</span>仕事を断る勇気を'},{w:'第3週',text:'まさやがサポートする週。家事を多めに引き受けて'},{w:'第4週',text:'少しずつ回復。温かいものを食べて心も体も温めて'}],
+  11:[{w:'第1週',text:'回復モード。穏やかに過ごせる週'},{w:'第2週',text:'まさやは安定月。なほこを支える側に'},{w:'第3週',text:'二人で年末の予定を話し合うのに良い週'},{w:'第4週',text:'<span class="good">◎ まさや好調。</span>なほこもつられて元気に'}],
+  12:[{w:'第1週',text:'なほこに学びのエネルギー。来年への準備を'},{w:'第2週',text:'まさやにプレッシャー。年末の忙しさが原因かも'},{w:'第3週',text:'お互い労い合う週。「今年もありがとう」を伝えて'},{w:'第4週',text:'<span class="good">◎ 年末は穏やか。</span>二人でゆっくり過ごして'}]
+};
+
+function renderMonthHighlight(monthData, now) {
+  var m = now.getMonth();
+  var d = monthData[m];
+  var sc = scoreColor(d.score);
+  var tagHtml = '';
+  for (var i = 0; i < d.tags.length; i++) {
+    var colors = {'仕事':'background:#eee8dd;color:#8a7560','お金':'background:#e8eddf;color:#6a8a50','健康':'background:#dde8ed;color:#5070a0','人間関係':'background:#ede0e0;color:#a06060'};
+    tagHtml += '<span class="month-hl-tag" style="' + (colors[d.tags[i]]||'') + '">' + d.tags[i] + '</span>';
+  }
+  return '<div class="month-highlight">' +
+    '<div class="month-hl-title">' + (m+1) + '月のハイライト</div>' +
+    '<div><span class="month-hl-star" style="background:' + starColor(d.score) + '">' + d.star + '</span>' +
+    '<span class="month-hl-summary">' + d.summary + '</span></div>' +
+    '<div class="month-hl-text">' + d.advice + '</div>' +
+    (tagHtml ? '<div class="month-hl-tags">' + tagHtml + '</div>' : '') +
+    '</div>';
+}
+
+function renderCoupleWeeks(now) {
+  var m = now.getMonth() + 1;
+  var weeks = COUPLE_WEEKS_2026[m];
+  if (!weeks) return '';
+  var h = '<div class="couple-week"><div class="couple-week-title">二人の今月カレンダー（' + m + '月）</div>';
+  for (var i = 0; i < weeks.length; i++) {
+    h += '<div class="couple-row"><div class="couple-week-label">' + weeks[i].w + '</div><div class="couple-week-text">' + weeks[i].text + '</div></div>';
+  }
+  return h + '</div>';
+}
+
+function getBestDays(now, monthData, branchData, person) {
+  var y = now.getFullYear(), m = now.getMonth();
+  var days = [];
+  var lastDay = new Date(y, m + 1, 0).getDate();
+  for (var d = 1; d <= lastDay; d++) {
+    var dt = new Date(y, m, d);
+    var gz = getDayGanzhi(dt);
+    var f = monthData[gz.stemIdx];
+    var score = Math.max(1, Math.min(10, f.score + branchMod(gz.branchIdx, person)));
+    days.push({date: dt, score: score, star: f.star, day: d, dow: DAYS[dt.getDay()]});
+  }
+  days.sort(function(a, b) { return b.score - a.score; });
+  return days.slice(0, 5);
+}
+
+function renderBestDays(now, monthData, branchData, person) {
+  var best = getBestDays(now, monthData, branchData, person);
+  var m = now.getMonth() + 1;
+  var tagColors = {
+    '契約':'background:#e8eddf;color:#6a8a50', '買い物':'background:#eee8dd;color:#8a7560',
+    '提案':'background:#dde8ed;color:#5070a0', '学び':'background:#e8e0ed;color:#7a60a0',
+    'デート':'background:#ede0e0;color:#a06060', '行動':'background:#eee8dd;color:#8a7560'
+  };
+  var starTags = {
+    '食神':'デート','傷官':'学び','偏財':'行動','正財':'契約',
+    '偏官':'','正官':'提案','偏印':'学び','正印':'学び','比肩':'行動','劫財':''
+  };
+  var h = '<div class="best-days"><div class="best-days-title">' + m + '月のラッキーDAY</div>';
+  for (var i = 0; i < best.length; i++) {
+    var b = best[i];
+    var tag = starTags[b.star] || '';
+    var tagH = tag ? '<span class="best-day-tag" style="' + (tagColors[tag]||'') + '">' + tag + '</span>' : '';
+    h += '<div class="best-day-item"><div class="best-day-date">' + m + '/' + b.day + '<span style="font-size:.6rem;color:var(--muted)">(' + b.dow + ')</span></div>' +
+      '<div class="best-day-desc">' + b.star + '（スコア' + b.score + '）' + tagH + '</div></div>';
+  }
+  return h + '</div>';
+}
+
+function getMoodKey(person) {
+  return person === 'husband' ? 'mood_masaya' : 'mood_nahoko';
+}
+
+function loadMoodData(person) {
+  try { return JSON.parse(localStorage.getItem(getMoodKey(person)) || '{}'); } catch(e) { return {}; }
+}
+
+function saveMoodEntry(person, dateStr, mood) {
+  var data = loadMoodData(person);
+  data[dateStr] = mood;
+  var keys = Object.keys(data);
+  if (keys.length > 90) {
+    keys.sort();
+    var keep = {};
+    for (var i = keys.length - 90; i < keys.length; i++) keep[keys[i]] = data[keys[i]];
+    data = keep;
+  }
+  localStorage.setItem(getMoodKey(person), JSON.stringify(data));
+}
+
+function recordMood(person, mood) {
+  var now = new Date();
+  var ds = now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  saveMoodEntry(person, ds, mood);
+  renderDaily();
+}
+
+function renderMoodTracker(now, person, dailyData, branchData) {
+  var moodData = loadMoodData(person);
+  var y = now.getFullYear(), m = now.getMonth();
+  var todayStr = y + '-' + String(m+1).padStart(2,'0') + '-' + String(now.getDate()).padStart(2,'0');
+  var todayMood = moodData[todayStr] || 0;
+  var pId = person === 'husband' ? 'husband' : 'me';
+  var moods = [{v:5,e:'😆',l:'最高'},{v:4,e:'😊',l:'良い'},{v:3,e:'😐',l:'普通'},{v:2,e:'😔',l:'微妙'},{v:1,e:'😫',l:'つらい'}];
+
+  var h = '<div class="mood-tracker"><div class="mood-title">今日の気分は？</div>';
+  h += '<div class="mood-today">';
+  for (var i = 0; i < moods.length; i++) {
+    h += '<button class="mood-btn' + (todayMood === moods[i].v ? ' selected' : '') + '" onclick="recordMood(\'' + pId + '\',' + moods[i].v + ')">' + moods[i].e + '<span class="mood-label">' + moods[i].l + '</span></button>';
+  }
+  h += '</div>';
+
+  var lastDay = new Date(y, m + 1, 0).getDate();
+  var matchCount = 0, totalCompare = 0;
+  h += '<div class="mood-history">';
+  for (var d = 1; d <= lastDay; d++) {
+    var ds = y + '-' + String(m+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    var dt = new Date(y, m, d);
+    var gz = getDayGanzhi(dt);
+    var f = dailyData[gz.stemIdx];
+    var fScore = Math.max(1, Math.min(10, f.score + branchMod(gz.branchIdx, pId)));
+    var moodVal = moodData[ds];
+    var bg = '#e8e0d8';
+    if (moodVal) {
+      var moodColors = {5:'#8aad8a',4:'#a8c8a8',3:'#cdbfa0',2:'#d4a0a0',1:'#c87f7f'};
+      bg = moodColors[moodVal] || bg;
+      var fNorm = fScore >= 7 ? 'good' : (fScore <= 4 ? 'bad' : 'mid');
+      var mNorm = moodVal >= 4 ? 'good' : (moodVal <= 2 ? 'bad' : 'mid');
+      totalCompare++;
+      if (fNorm === mNorm) matchCount++;
+    }
+    var isToday = d === now.getDate();
+    h += '<div class="mood-dot" style="background:' + bg + ';' + (isToday ? 'box-shadow:0 0 0 2px var(--gold)' : '') + '" title="' + d + '日">' + d + '</div>';
+  }
+  h += '</div>';
+  h += '<div class="mood-legend">';
+  h += '<span><span class="mood-legend-dot" style="background:#8aad8a"></span>最高/良い</span>';
+  h += '<span><span class="mood-legend-dot" style="background:#cdbfa0"></span>普通</span>';
+  h += '<span><span class="mood-legend-dot" style="background:#c87f7f"></span>微妙/つらい</span>';
+  h += '<span><span class="mood-legend-dot" style="background:#e8e0d8"></span>未記録</span>';
+  h += '</div>';
+  if (totalCompare >= 3) {
+    var pct = Math.round(matchCount / totalCompare * 100);
+    h += '<div class="mood-match">運勢との一致率: ' + pct + '%（' + totalCompare + '日中' + matchCount + '日一致）</div>';
+  }
+  return h + '</div>';
+}
+
 function renderDaily() {
   var now = new Date();
   var tmrw = new Date(now);
   tmrw.setDate(tmrw.getDate() + 1);
   var timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0') + ' 更新';
 
-  var meHtml = '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
+  var meHtml = renderMonthHighlight(ME_MONTH, now) +
+    renderCoupleWeeks(now) +
+    renderBestDays(now, ME_DAILY, ME_BRANCH, 'me') +
+    renderMoodTracker(now, 'me', ME_DAILY, ME_BRANCH) +
+    '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
     renderDayCard(now, ME_DAILY, ME_BRANCH, true) + renderDayCard(tmrw, ME_DAILY, ME_BRANCH, false) + '</div>';
   document.getElementById('daily-me').innerHTML = meHtml;
 
-  var husHtml = '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
+  var husHtml = renderMonthHighlight(HUS_MONTH, now) +
+    renderCoupleWeeks(now) +
+    renderBestDays(now, HUS_DAILY, HUS_BRANCH, 'husband') +
+    renderMoodTracker(now, 'husband', HUS_DAILY, HUS_BRANCH) +
+    '<div class="daily-section"><div class="daily-header"><div class="daily-title">今日の運勢</div><div class="daily-update">' + timeStr + '｜毎日0:00切替</div></div>' +
     renderDayCard(now, HUS_DAILY, HUS_BRANCH, true) + renderDayCard(tmrw, HUS_DAILY, HUS_BRANCH, false) + '</div>';
   document.getElementById('daily-husband').innerHTML = husHtml;
 }
