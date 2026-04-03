@@ -22,8 +22,8 @@
   .nav button.active::after{content:'';position:absolute;bottom:0;left:20%;right:20%;height:2px;background:var(--gold);border-radius:2px}
   .person-page[data-person="husband"] .nav button.active{color:var(--blue)}
   .person-page[data-person="husband"] .nav button.active::after{background:var(--blue)}
-  .slider-container{overflow:hidden;touch-action:pan-y}
-  .slider{display:flex;transition:transform .35s cubic-bezier(.25,.1,.25,1);will-change:transform}
+  .slider-container{overflow:hidden;touch-action:pan-y;transition:height .35s ease}
+  .slider{display:flex;transition:transform .35s cubic-bezier(.25,.1,.25,1);will-change:transform;align-items:flex-start}
   .section{min-width:100%;padding:16px;padding-bottom:60px}
   .card{background:var(--card);border-radius:14px;padding:18px;margin-bottom:14px;box-shadow:0 1px 8px rgba(0,0,0,.04);border:1px solid var(--border)}
   .card-title{font-size:.88rem;font-weight:700;margin-bottom:14px;letter-spacing:.02em}
@@ -957,6 +957,10 @@ function initSlider(page) {
   const totalPages = buttons.length;
   let idx = 0, sx = 0, cx = 0, drag = false;
 
+  var sections = page.querySelectorAll('.section');
+  function updateHeight(i) {
+    if (sections[i]) container.style.height = sections[i].scrollHeight + 'px';
+  }
   function go(i) {
     if (i < 0 || i >= totalPages) return;
     idx = i;
@@ -965,6 +969,7 @@ function initSlider(page) {
     buttons[i].classList.add('active');
     dots.forEach(d => d.classList.remove('active'));
     dots[i].classList.add('active');
+    updateHeight(i);
   }
 
   buttons.forEach(b => {
@@ -980,7 +985,16 @@ function initSlider(page) {
 
 function toggle(row) {
   const d = row.nextElementSibling;
-  if (d && d.classList.contains('detail')) d.classList.toggle('open');
+  if (d && d.classList.contains('detail')) {
+    d.classList.toggle('open');
+    var page = row.closest('.person-page');
+    if (page) {
+      var cont = page.querySelector('.slider-container');
+      var activeIdx = parseInt(page.querySelector('.nav button.active').dataset.idx);
+      var sec = page.querySelectorAll('.section')[activeIdx];
+      if (cont && sec) setTimeout(function(){ cont.style.height = sec.scrollHeight + 'px'; }, 50);
+    }
+  }
 }
 
 initSlider(document.querySelector('.person-page.active'));
