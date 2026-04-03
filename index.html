@@ -719,22 +719,26 @@ renderDaily();
 
 var chatHistory = [];
 var chatReady = false;
+var chatUser = '';
 
 function openChat() {
   var overlay = document.getElementById('chat-overlay');
   overlay.classList.add('open');
   var key = localStorage.getItem('fortune_ai_key');
   if (!key) { showChatSetup(); return; }
-  if (!chatReady) {
+  var user = getActiveUser();
+  if (!chatReady || chatUser !== user) {
+    chatHistory = [];
+    var partner = user === 'なほこ' ? 'まさや' : 'なほこ';
     document.getElementById('chat-body').innerHTML =
-      '<div class="chat-msg ai">こんにちは！四柱推命に基づいて何でもアドバイスしますよ。<br><br>' +
+      '<div class="chat-msg ai"><b>' + user + 'さん</b>としてチャット中！<br>四柱推命に基づいて何でもアドバイスしますよ。<br><br>' +
       '<b>こんな質問ができます：</b><br>' +
       '・車を買うタイミングはいつがいい？<br>' +
       '・今月の仕事運は？<br>' +
-      '・旦那との旅行はいつがベスト？<br>' +
-      '・転職するなら何月？<br>' +
+      '・' + partner + 'との旅行はいつがベスト？<br>' +
       '・今日やるべきことは？</div>';
     chatReady = true;
+    chatUser = user;
   }
   document.getElementById('chat-foot').style.display = 'flex';
   setTimeout(function(){ document.getElementById('chat-input').focus(); }, 100);
@@ -771,6 +775,11 @@ function saveKey() {
   localStorage.setItem('fortune_ai_key', key);
   chatReady = false;
   openChat();
+}
+
+function getActiveUser() {
+  var active = document.querySelector('.person-toggle button.active');
+  return active && active.dataset.person === 'husband' ? 'まさや' : 'なほこ';
 }
 
 function getChatSystemPrompt() {
@@ -811,8 +820,9 @@ function getChatSystemPrompt() {
     '3. 二人の相性や五行バランスも考慮する\n' +
     '4. 親しみやすい日本語で回答する。絵文字は使わない。\n' +
     '5. 簡潔に回答する（200〜400文字程度）\n' +
-    '6. 質問者は「なほこ」本人。まさやのことも聞く場合がある\n' +
-    '7. 大運の正財期（29〜38歳）にいることを常に意識してアドバイスする';
+    '6. 質問者は「' + getActiveUser() + '」本人。パートナーのことも聞く場合がある\n' +
+    '7. なほこへのアドバイスでは大運の偏官期（25〜28歳→正財期29〜38歳に移行中）を意識する\n' +
+    '8. まさやへのアドバイスでは偏財大運の最終年であることを意識する';
 }
 
 function escHtml(t) { var d = document.createElement('div'); d.textContent = t; return d.innerHTML; }
